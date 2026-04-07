@@ -5,11 +5,7 @@ __pycache__/
 
 # Virtual environments
 venv/
-env/
-**/venv/
-**/env/
-.env
-*.env
+
 
 # Large A.I. Models
 *.pth
