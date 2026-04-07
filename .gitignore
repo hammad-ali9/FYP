@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+**/venv/
+**/env/
+
+# Large A.I. Models
+*.pth
+*.h5
+*.tflite
+*.pb
+*.onnx
+*.weights
+*.model
+*.bin
+
+
+# Models
+Models/product segmentation/*
+
+# Node modules
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Database
+*.db
+*.sqlite
+
+# Uploads
+backend/static/uploads/*
+!backend/static/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+*.egg-info/
+
+# Secrets
+creds_output.txt
+db_output.txt
