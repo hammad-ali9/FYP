@@ -23,6 +23,12 @@ def create_app():
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key')
     app.config['HF_TOKEN'] = os.getenv('HF_TOKEN', '')
     app.config['GROQ_API_KEY'] = os.getenv('GROQ_API_KEY', '')
+    # CatVTON try-on server (Colab tunnel URL; changes each session, can be
+    # overridden at runtime via POST /api/tryon/server)
+    app.config['TRYON_API_URL'] = os.getenv('TRYON_API_URL', '')
+    # Public JSON store the Colab notebook publishes its tunnel URL to, so the
+    # backend auto-discovers the current URL each session (no manual setup).
+    app.config['TRYON_DISCOVERY_URL'] = os.getenv('TRYON_DISCOVERY_URL', '')
     
     # File upload config
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'uploads')
@@ -62,11 +68,22 @@ def create_app():
     app.register_blueprint(gestures_bp, url_prefix='/api/gestures')
     app.register_blueprint(tryon_bp, url_prefix='/api/tryon')
 
+    # Seed the CatVTON engine config (tunnel URL + discovery store)
+    from app.utils.catvton_engine import catvton_engine
+    if app.config['TRYON_API_URL']:
+        catvton_engine.set_url(app.config['TRYON_API_URL'])
+    if app.config['TRYON_DISCOVERY_URL']:
+        catvton_engine.set_discovery_url(app.config['TRYON_DISCOVERY_URL'])
 
-    
+    # Serve uploaded product images (image_url like /uploads/<file>)
+    from flask import send_from_directory
+    @app.route('/uploads/<path:filename>')
+    def serve_upload(filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
     # Health check route
     @app.route('/api/health')
     def health():
         return {'status': 'ok', 'message': 'VirtualFit API is running'}
-    
+
     return app

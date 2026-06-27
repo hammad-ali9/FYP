@@ -1,18 +1,31 @@
+import os
 import cv2
 import mediapipe as mp
 import numpy as np
+from mediapipe.tasks import python as mp_python
+from mediapipe.tasks.python import vision as mp_vision
+
+# Path to the bundled PoseLandmarker model (downloaded once during setup).
+_MODEL_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..", "..", "Models", "mediapipe", "pose_landmarker_full.task"
+)
 
 class PoseAnalyzer:
     def __init__(self):
-        self.mp_pose = mp.solutions.pose
-        self.pose = self.mp_pose.Pose(
-            static_image_mode=False,
-            model_complexity=1,
-            smooth_landmarks=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
+        # Migrated from the legacy mp.solutions.pose API (removed from the
+        # Python 3.13 mediapipe wheels) to the new mediapipe Tasks API.
+        # IMAGE running mode analyzes each frame independently, matching the
+        # stateless per-frame usage below.
+        options = mp_vision.PoseLandmarkerOptions(
+            base_options=mp_python.BaseOptions(model_asset_path=os.path.abspath(_MODEL_PATH)),
+            running_mode=mp_vision.RunningMode.IMAGE,
+            num_poses=1,
+            min_pose_detection_confidence=0.5,
+            min_pose_presence_confidence=0.5,
+            min_tracking_confidence=0.5,
         )
-        self.mp_draw = mp.solutions.drawing_utils
+        self.landmarker = mp_vision.PoseLandmarker.create_from_options(options)
 
     def analyze_frame(self, frame, step="FRONT", selected_upper=False, selected_lower=False):
         """
@@ -23,12 +36,13 @@ class PoseAnalyzer:
             return {"status": "error", "feedback": "No frame provided"}
 
         img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.pose.process(img_rgb)
-        
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(img_rgb))
+        results = self.landmarker.detect(mp_image)
+
         h, w, c = frame.shape
         feedback = []
         is_ready = True
-        
+
         if not results.pose_landmarks:
             return {
                 "status": "waiting",
@@ -36,7 +50,9 @@ class PoseAnalyzer:
                 "parts_visible": 0
             }
 
-        lms = results.pose_landmarks.landmark
+        # Tasks API returns a list of poses; each is a flat list of 33 landmarks
+        # with the same indices as the legacy solution.
+        lms = results.pose_landmarks[0]
         
         # 1. Determine Key Points Visibility requirements based on step
         # Front/Left/Right usually need some face parts, but BACK strictly does not.

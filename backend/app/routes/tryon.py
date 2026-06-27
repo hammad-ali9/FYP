@@ -3,6 +3,7 @@ import os
 import base64
 import time
 from app.utils.tryon_engine import tryon_engine
+from app.utils.catvton_engine import catvton_engine
 from app.utils.gesture_engine import engine
 from app.utils.pose_analyzer import pose_analyzer
 from app.utils.narrator import narrator
@@ -148,4 +149,87 @@ def generate_tryon():
 
     except Exception as e:
         print(f"  ❌ TryOn Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# CatVTON multi-view try-on (Colab server)
+# ---------------------------------------------------------------------------
+
+@tryon_bp.route('/server', methods=['GET', 'POST'])
+def tryon_server():
+    """Get or set the CatVTON Colab tunnel URL (changes every Colab session)."""
+    try:
+        if request.method == 'POST':
+            data = request.json or {}
+            url = data.get('url', '')
+            catvton_engine.set_url(url)
+        elif not catvton_engine.is_configured():
+            # GET with nothing set yet — try to auto-discover from the store
+            catvton_engine.discover()
+        return jsonify({
+            'success': True,
+            'url': catvton_engine.base_url,
+            'configured': catvton_engine.is_configured(),
+            'discovery_url': catvton_engine.discovery_url,
+            'health': catvton_engine.health(),
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@tryon_bp.route('/generate_multiview', methods=['POST'])
+def generate_multiview():
+    """Run CatVTON once per captured body view and return a result per view.
+
+    Body:
+        person_images: { front, back, left, right }  (base64/dataurl; front required)
+        garment_front: URL or base64 of the garment's front image (required)
+        garment_back:  URL or base64 of the garment's back image  (optional)
+        clothing_type: 'upper' | 'lower' | 'full'
+        steps, guidance, seed: optional generation params
+    """
+    try:
+        if not catvton_engine.is_configured():
+            catvton_engine.discover()  # auto-pick up the URL the notebook published
+        if not catvton_engine.is_configured():
+            return jsonify({'success': False,
+                            'error': 'Try-on server not available. Start the Colab '
+                                     'notebook (it publishes its URL automatically).'}), 503
+
+        data = request.json or {}
+        person_images = data.get('person_images') or {}
+        person_views = {k: v for k, v in person_images.items() if v}
+        if not person_views.get('front'):
+            return jsonify({'success': False, 'error': 'front person image is required'}), 400
+
+        garment_front = data.get('garment_front')
+        garment_back = data.get('garment_back')
+        if not garment_front:
+            return jsonify({'success': False, 'error': 'garment_front is required'}), 400
+
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        garment_front_b64 = catvton_engine.resolve_image_to_b64(garment_front, upload_folder)
+        garment_back_b64 = (catvton_engine.resolve_image_to_b64(garment_back, upload_folder)
+                            if garment_back else None)
+
+        out = catvton_engine.tryon_multiview(
+            person_views=person_views,
+            garment_front_b64=garment_front_b64,
+            garment_back_b64=garment_back_b64,
+            cloth_type=data.get('clothing_type', 'upper'),
+            steps=int(data.get('steps', 30)),
+            guidance=float(data.get('guidance', 2.5)),
+            seed=int(data.get('seed', 42)),
+        )
+
+        if not out['results']:
+            return jsonify({'success': False,
+                            'error': 'All views failed',
+                            'errors': out['errors']}), 502
+
+        return jsonify({'success': True, **out})
+
+    except Exception as e:
+        print(f"  ❌ Multiview TryOn Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

@@ -19,7 +19,8 @@ class Product(db.Model):
     clothing_type = db.Column(db.String(20), default='upper')  # upper, lower, full
     
     # Images
-    image_url = db.Column(db.String(255))
+    image_url = db.Column(db.String(255))          # front view of the garment
+    back_image_url = db.Column(db.String(255))     # back view (for 360 multi-view try-on)
     additional_images = db.Column(db.Text) # JSON list of strings
     
     # Segmentation data (for future use)
@@ -48,6 +49,7 @@ class Product(db.Model):
             'stock_status': self.stock_status,
             'clothing_type': self.clothing_type,
             'image_url': self.image_url,
+            'back_image_url': self.back_image_url,
             'additional_images': add_imgs,
             'segmentation_ready': self.segmentation_ready,
             'created_at': self.created_at.isoformat() if self.created_at else None,

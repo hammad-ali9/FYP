@@ -320,7 +320,30 @@ export const tryonAPI = {
                 token
             }),
         });
-    }
+    },
+
+    // CatVTON multi-view 360 try-on (Colab server).
+    // personImages: { front, back, left, right } as base64/dataurl (front required)
+    generateMultiview: async ({ personImages, garmentFront, garmentBack = null,
+                                clothingType = 'upper', steps = 30 }) => {
+        return apiRequest('/tryon/generate_multiview', {
+            method: 'POST',
+            body: JSON.stringify({
+                person_images: personImages,
+                garment_front: garmentFront,
+                garment_back: garmentBack,
+                clothing_type: clothingType,
+                steps,
+            }),
+        });
+    },
+
+    // Get / set the Colab tunnel URL (changes every Colab session).
+    getServer: async () => apiRequest('/tryon/server'),
+    setServer: async (url) => apiRequest('/tryon/server', {
+        method: 'POST',
+        body: JSON.stringify({ url }),
+    }),
 };
 
 export default { authAPI, outletsAPI, productsAPI, subscriptionsAPI, sessionsAPI, tryonAPI };

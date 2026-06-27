@@ -43,7 +43,9 @@ const TryOn = () => {
     const [analysis, setAnalysis] = useState({ status: 'waiting', feedback: 'Initializing...' });
     const [countdown, setCountdown] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [tryOnResult, setTryOnResult] = useState(null); 
+    const [tryOnResult, setTryOnResult] = useState(null); // { front, left, right, back } of result data URLs
+    const [activeView, setActiveView] = useState('front'); // active view in the 360 result viewer
+    const dragRef = useRef(null); // pointer-x at drag start, for rotate-by-drag
     const [error, setError] = useState(null);
     const [lastSpoken, setLastSpoken] = useState('');
     const [narratorMessage, setNarratorMessage] = useState('');
@@ -372,15 +374,30 @@ const TryOn = () => {
         try {
             setIsGenerating(true);
             setError(null);
-            
-            const garment = selectedUpper || selectedLower;
-            const garmentImage = getProductImage(garment);
 
-            // We use the 'front' image as primary for now as most models 
-            // only handle single view, but we've stored all 4 for future 360 logic.
-            const response = await tryonAPI.generate(personImages.front, garmentImage);
+            const garment = selectedUpper || selectedLower;
+            const clothingType = isLowerBody(garment)
+                ? 'lower'
+                : (garment.clothing_type === 'full' ? 'full' : 'upper');
+
+            // Send every captured body view; CatVTON runs once per view on the
+            // Colab server (front garment for front/left/right, back for BACK).
+            const personViews = Object.fromEntries(
+                Object.entries(personImages).filter(([, img]) => !!img)
+            );
+
+            const response = await tryonAPI.generateMultiview({
+                personImages: personViews,
+                garmentFront: garment.image_url || getProductImage(garment),
+                garmentBack: garment.back_image_url || null,
+                clothingType,
+                steps: 30,
+            });
+
             if (response.success) {
-                setTryOnResult(response.result_url);
+                setTryOnResult(response.results); // { view: dataurl }
+                const first = ['front', 'left', 'right', 'back'].find(v => response.results[v]);
+                setActiveView(first || 'front');
             } else {
                 setError(response.error || 'Failed to generate try-on');
             }
@@ -1064,52 +1081,110 @@ const TryOn = () => {
                 </div>
             </div>
             {/* ==================== TRY-ON RESULT MODAL ==================== */}
-            {tryOnResult && (
+            {tryOnResult && (() => {
+                const VIEW_LABEL = { front: 'Front', left: 'Left', right: 'Right', back: 'Back' };
+                const order = ['front', 'left', 'right', 'back'].filter(v => tryOnResult[v]);
+                const idx = Math.max(0, order.indexOf(activeView));
+                const rotate = (d) => setActiveView(order[(idx + d + order.length) % order.length]);
+
+                const onPointerDown = (e) => { dragRef.current = e.clientX; };
+                const onPointerMove = (e) => {
+                    if (dragRef.current == null) return;
+                    const dx = e.clientX - dragRef.current;
+                    if (Math.abs(dx) > 45) { rotate(dx < 0 ? 1 : -1); dragRef.current = e.clientX; }
+                };
+                const endDrag = () => { dragRef.current = null; };
+
+                return (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-8">
-                    <div 
+                    <div
                         className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"
                         onClick={() => setTryOnResult(null)}
                     ></div>
-                    
+
                     <div className="relative z-10 w-full max-w-4xl bg-slate-900 border border-white/10 rounded-[40px] overflow-hidden shadow-2xl animate-in zoom-in duration-500">
                         <div className="flex h-[600px]">
-                            {/* Comparison / Result View */}
-                            <div className="flex-1 bg-black flex items-center justify-center p-4">
-                                <img 
-                                    src={tryOnResult} 
-                                    alt="Virtual Try-On Result" 
-                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl shadow-indigo-500/20"
-                                />
+                            {/* 360 Result View */}
+                            <div className="flex-1 bg-black flex flex-col items-center justify-center p-4 relative select-none">
+                                <div
+                                    className="relative flex-1 w-full flex items-center justify-center cursor-grab active:cursor-grabbing"
+                                    onPointerDown={onPointerDown}
+                                    onPointerMove={onPointerMove}
+                                    onPointerUp={endDrag}
+                                    onPointerLeave={endDrag}
+                                >
+                                    <img
+                                        src={tryOnResult[activeView]}
+                                        alt={`Virtual Try-On ${VIEW_LABEL[activeView]}`}
+                                        draggable={false}
+                                        className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl shadow-indigo-500/20 pointer-events-none"
+                                    />
+
+                                    {/* Rotate arrows */}
+                                    {order.length > 1 && (
+                                        <>
+                                            <button onClick={() => rotate(-1)}
+                                                className="absolute left-2 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors">
+                                                <span className="material-symbols-outlined">chevron_left</span>
+                                            </button>
+                                            <button onClick={() => rotate(1)}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors">
+                                                <span className="material-symbols-outlined">chevron_right</span>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {/* Current view badge */}
+                                    <div className="absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-bold uppercase tracking-widest text-white/80">
+                                        {VIEW_LABEL[activeView]} View
+                                    </div>
+                                    {order.length > 1 && (
+                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white/40 text-[10px] uppercase tracking-widest">
+                                            <span className="material-symbols-outlined text-sm">360</span> Drag to rotate
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* View thumbnails */}
+                                <div className="flex items-center gap-2 mt-3">
+                                    {order.map((v) => (
+                                        <button key={v} onClick={() => setActiveView(v)}
+                                            className={`relative size-16 rounded-xl overflow-hidden border-2 transition-all ${activeView === v ? 'border-indigo-500 scale-105' : 'border-white/10 opacity-60 hover:opacity-100'}`}>
+                                            <img src={tryOnResult[v]} alt={VIEW_LABEL[v]} className="w-full h-full object-cover" />
+                                            <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] font-bold uppercase tracking-wider text-white/80 text-center">{VIEW_LABEL[v]}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            
+
                             {/* Controls Panel */}
                             <div className="w-80 p-8 flex flex-col bg-white/[0.02] border-l border-white/5">
                                 <div className="mb-8">
-                                    <h2 className="text-2xl font-semibold mb-2">Virtual Look</h2>
-                                    <p className="text-white/40 text-sm">Processed by IDM-VTON Core</p>
+                                    <h2 className="text-2xl font-semibold mb-2">360° Virtual Look</h2>
+                                    <p className="text-white/40 text-sm">Multi-view try-on · CatVTON</p>
                                 </div>
-                                
+
                                 <div className="space-y-4 mb-auto">
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                        <div className="text-xs text-white/30 uppercase tracking-widest mb-3">Model Details</div>
+                                        <div className="text-xs text-white/30 uppercase tracking-widest mb-3">Generated Views</div>
                                         <div className="flex items-center gap-3">
                                             <div className="size-10 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
                                                 <span className="material-symbols-outlined text-emerald-400 text-sm">stars</span>
                                             </div>
-                                            <span className="text-sm font-medium">Ultra High Fidelity</span>
+                                            <span className="text-sm font-medium">{order.length} view{order.length > 1 ? 's' : ''} · rotate to inspect</span>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-3">
-                                    <button 
-                                        onClick={() => window.open(tryOnResult, '_blank')}
+                                    <button
+                                        onClick={() => window.open(tryOnResult[activeView], '_blank')}
                                         className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 font-bold hover:scale-[1.02] transition-transform active:scale-95"
                                     >
                                         <span className="material-symbols-outlined">download</span>
-                                        Download Image
+                                        Download {VIEW_LABEL[activeView]}
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setTryOnResult(null)}
                                         className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-medium hover:bg-white/10 transition-colors"
                                     >
@@ -1118,9 +1193,9 @@ const TryOn = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Close button top right */}
-                        <button 
+                        <button
                             onClick={() => setTryOnResult(null)}
                             className="absolute top-6 right-6 size-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                         >
@@ -1128,7 +1203,8 @@ const TryOn = () => {
                         </button>
                     </div>
                 </div>
-            )}
+                );
+            })()}
 
             {/* Error Toast */}
             {error && (

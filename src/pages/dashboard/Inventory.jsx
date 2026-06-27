@@ -44,6 +44,7 @@ const Inventory = () => {
         stock_status: 'in_stock',
         clothing_type: 'upper',
         image_url: '',
+        back_image_url: '', // garment back view (for 360 multi-view try-on)
         additional_images_text: '' // For form input (one per line)
     });
 
@@ -106,6 +107,7 @@ const Inventory = () => {
             stock_status: 'in_stock',
             clothing_type: 'upper',
             image_url: '',
+            back_image_url: '',
             additional_images_text: ''
         });
         setShowModal(true);
@@ -122,6 +124,7 @@ const Inventory = () => {
             stock_status: product.stock_status,
             clothing_type: product.clothing_type || 'upper',
             image_url: product.image_url || '',
+            back_image_url: product.back_image_url || '',
             additional_images_text: product.additional_images ? product.additional_images.join('\n') : ''
         });
         setShowModal(true);
@@ -484,14 +487,25 @@ const Inventory = () => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Image URL</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Front Image URL</label>
                                 <input
                                     type="url"
                                     name="image_url"
                                     value={formData.image_url}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-sm focus:border-primary transition-all outline-none font-medium text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
-                                    placeholder="https://example.com/image.jpg"
+                                    placeholder="https://example.com/front.jpg"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Back Image URL <span className="text-slate-400 normal-case tracking-normal">(for 360 try-on)</span></label>
+                                <input
+                                    type="url"
+                                    name="back_image_url"
+                                    value={formData.back_image_url}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-sm focus:border-primary transition-all outline-none font-medium text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+                                    placeholder="https://example.com/back.jpg"
                                 />
                             </div>
                             <div>

@@ -80,16 +80,20 @@ def create_product():
                 }), 403
     
     import json
-    # Handle file upload if present
-    image_url = None
-    if 'image' in request.files:
-        file = request.files['image']
-        if file and file.filename and allowed_file(file.filename):
-            filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            image_url = f"/uploads/{filename}"
-            
+
+    def _save_upload(field):
+        if field in request.files:
+            f = request.files[field]
+            if f and f.filename and allowed_file(f.filename):
+                fname = f"{uuid.uuid4()}_{secure_filename(f.filename)}"
+                f.save(os.path.join(current_app.config['UPLOAD_FOLDER'], fname))
+                return f"/uploads/{fname}"
+        return None
+
+    # Handle file uploads if present (front + back garment views)
+    image_url = _save_upload('image')
+    back_image_url = _save_upload('back_image')
+
     # Handle additional images (JSON list of URLs expected)
     additional_images = data.get('additional_images', [])
     if isinstance(additional_images, str):
@@ -107,6 +111,7 @@ def create_product():
         stock_status=data.get('stock_status', 'in_stock'),
         clothing_type=data.get('clothing_type', 'upper'),
         image_url=image_url or data.get('image_url'),
+        back_image_url=back_image_url or data.get('back_image_url'),
         additional_images=json.dumps(additional_images)
     )
     
@@ -143,7 +148,9 @@ def update_product(product_id):
         product.clothing_type = data['clothing_type']
     if 'image_url' in data:
         product.image_url = data['image_url']
-        
+    if 'back_image_url' in data:
+        product.back_image_url = data['back_image_url']
+
     if 'additional_images' in data:
         import json
         imgs = data['additional_images']
@@ -158,15 +165,23 @@ def update_product(product_id):
         elif isinstance(imgs, list):
              product.additional_images = json.dumps(imgs)
     
-    # Handle new image upload
-    if 'image' in request.files:
-        file = request.files['image']
-        if file and file.filename and allowed_file(file.filename):
-            filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            product.image_url = f"/uploads/{filename}"
-    
+    # Handle new image uploads (front + back garment views)
+    def _save_upload(field):
+        if field in request.files:
+            f = request.files[field]
+            if f and f.filename and allowed_file(f.filename):
+                fname = f"{uuid.uuid4()}_{secure_filename(f.filename)}"
+                f.save(os.path.join(current_app.config['UPLOAD_FOLDER'], fname))
+                return f"/uploads/{fname}"
+        return None
+
+    new_front = _save_upload('image')
+    if new_front:
+        product.image_url = new_front
+    new_back = _save_upload('back_image')
+    if new_back:
+        product.back_image_url = new_back
+
     db.session.commit()
     
     return jsonify({
