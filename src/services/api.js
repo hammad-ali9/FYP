@@ -345,6 +345,13 @@ export const tryonAPI = {
         });
     },
 
+    // Single-image -> real 3D mesh (.glb) via TripoSR on the Colab server.
+    // image: dataurl/base64/url. Returns { success, mesh_b64, format, seconds }.
+    generateMesh: async (image) => apiRequest('/tryon/mesh', {
+        method: 'POST',
+        body: JSON.stringify({ image }),
+    }),
+
     // Get / set the Colab tunnel URL (changes every Colab session).
     getServer: async () => apiRequest('/tryon/server'),
     setServer: async (url) => apiRequest('/tryon/server', {

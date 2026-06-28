@@ -209,6 +209,26 @@ class CatVTONEngine:
 
         return {'results': results, 'timings': timings, 'errors': errors}
 
+    def mesh(self, image_b64: str, timeout: int = 300) -> dict:
+        """Single-image -> 3D mesh via the Colab server's /mesh (TripoSR).
+        Returns {'mesh_b64': base64-of-glb, 'format': 'glb', 'seconds': float}."""
+        if not self.base_url:
+            self.discover()
+        if not self.base_url:
+            raise RuntimeError('Try-on server not available (discovery failed). '
+                               'Start the Colab notebook so it publishes its URL.')
+        payload = {'image': self._strip_dataurl(image_b64)}
+        try:
+            r = requests.post(f'{self.base_url}/mesh', json=payload, timeout=timeout)
+            r.raise_for_status()
+            return r.json()
+        except (requests.ConnectionError, requests.Timeout):
+            if self.discover():
+                r = requests.post(f'{self.base_url}/mesh', json=payload, timeout=timeout)
+                r.raise_for_status()
+                return r.json()
+            raise
+
     def tryon_outfit(self, person_views: dict, garments: list,
                      steps: int = 30, guidance: float = 2.0, seed: int = 42) -> dict:
         """Apply an ordered list of garments to each captured view, CHAINING each

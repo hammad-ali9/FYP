@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { productsAPI, gesturesAPI, tryonAPI } from '../services/api';
+import OutfitViewer3D from '../components/OutfitViewer3D';
+import MeshViewer from '../components/MeshViewer';
 
 const TryOn = () => {
     const [selectedUpper, setSelectedUpper] = useState(null); // Shirt/Top
@@ -50,6 +52,10 @@ const TryOn = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [tryOnResult, setTryOnResult] = useState(null); // { front, left, right, back } of result data URLs
     const [activeView, setActiveView] = useState('front'); // active view in the 360 result viewer
+    const [view3D, setView3D] = useState(true); // 3D turntable vs flat photo in the result viewer
+    const [meshUrl, setMeshUrl] = useState(null); // object URL of the generated .glb mesh
+    const [meshLoading, setMeshLoading] = useState(false);
+    const [meshError, setMeshError] = useState(null);
     const dragRef = useRef(null); // pointer-x at drag start, for rotate-by-drag
     const [error, setError] = useState(null);
     const [lastSpoken, setLastSpoken] = useState('');
@@ -280,13 +286,9 @@ const TryOn = () => {
                 setNarratorMessage(transitionMsg);
                 setIsAutomatedFlow(false); 
                 
-                // If it was the final step, we can mark as "COMPLETED" globally if we want, 
-                // but better to just keep the dashboard active.
-                if (targetStep === 'FRONT' && (selectedUpper || selectedLower)) {
-                    // Auto-trigger if front is captured and clothes selected
-                    // but we'll wait 2s for user to see the thumbnail
-                    setTimeout(() => handleVirtualTryOn(), 2000);
-                }
+                // Don't auto-generate after the front shot — let the user capture
+                // the other angles (left/right/back) first, then press "Virtual
+                // Try On". Capturing 2+ angles produces the rotatable 3D result.
             }
         } catch (err) {
             setError('Capture failed');
@@ -438,6 +440,31 @@ const TryOn = () => {
             setError(err.message || 'An unexpected error occurred during try-on');
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    // Generate a real 3D mesh (.glb via TripoSR) from the current result image.
+    const handleGenerateMesh = async () => {
+        const img = (tryOnResult && (tryOnResult[activeView] || tryOnResult.front));
+        if (!img) return;
+        try {
+            setMeshLoading(true);
+            setMeshError(null);
+            if (meshUrl) { URL.revokeObjectURL(meshUrl); setMeshUrl(null); }
+            const res = await tryonAPI.generateMesh(img);
+            if (res.success && res.mesh_b64) {
+                const bin = atob(res.mesh_b64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const url = URL.createObjectURL(new Blob([bytes], { type: 'model/gltf-binary' }));
+                setMeshUrl(url);
+            } else {
+                setMeshError(res.error || 'Mesh generation failed');
+            }
+        } catch (e) {
+            setMeshError(e.message || 'Mesh generation failed');
+        } finally {
+            setMeshLoading(false);
         }
     };
 
@@ -1141,6 +1168,21 @@ const TryOn = () => {
                         <div className="flex h-[600px]">
                             {/* 360 Result View */}
                             <div className="flex-1 bg-black flex flex-col items-center justify-center p-4 relative select-none">
+                                {(view3D && order.length > 1) ? (
+                                    <div className="relative flex-1 w-full">
+                                        <OutfitViewer3D images={tryOnResult} />
+                                        <div className="absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-bold uppercase tracking-widest text-white/80">
+                                            3D Look
+                                        </div>
+                                        <button onClick={() => setView3D(false)}
+                                            className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white">
+                                            Photos
+                                        </button>
+                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white/40 text-[10px] uppercase tracking-widest pointer-events-none">
+                                            <span className="material-symbols-outlined text-sm">3d_rotation</span> Drag to rotate
+                                        </div>
+                                    </div>
+                                ) : (
                                 <div
                                     className="relative flex-1 w-full flex items-center justify-center cursor-grab active:cursor-grabbing"
                                     onPointerDown={onPointerDown}
@@ -1174,11 +1216,18 @@ const TryOn = () => {
                                         {VIEW_LABEL[activeView]} View
                                     </div>
                                     {order.length > 1 && (
+                                        <button onClick={() => setView3D(true)}
+                                            className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white">
+                                            3D
+                                        </button>
+                                    )}
+                                    {order.length > 1 && (
                                         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white/40 text-[10px] uppercase tracking-widest">
                                             <span className="material-symbols-outlined text-sm">360</span> Drag to rotate
                                         </div>
                                     )}
                                 </div>
+                                )}
 
                                 {/* View thumbnails */}
                                 <div className="flex items-center gap-2 mt-3">
@@ -1196,7 +1245,7 @@ const TryOn = () => {
                             <div className="w-80 p-8 flex flex-col bg-white/[0.02] border-l border-white/5">
                                 <div className="mb-8">
                                     <h2 className="text-2xl font-semibold mb-2">360° Virtual Look</h2>
-                                    <p className="text-white/40 text-sm">Multi-view try-on · CatVTON</p>
+                                    <p className="text-white/40 text-sm">Virtual try-on · IDM-VTON</p>
                                 </div>
 
                                 <div className="space-y-4 mb-auto">
@@ -1212,6 +1261,15 @@ const TryOn = () => {
                                 </div>
 
                                 <div className="space-y-3">
+                                    <button
+                                        onClick={handleGenerateMesh}
+                                        disabled={meshLoading}
+                                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 font-bold hover:scale-[1.02] transition-transform active:scale-95 disabled:opacity-60 disabled:hover:scale-100"
+                                    >
+                                        <span className={`material-symbols-outlined ${meshLoading ? 'animate-spin' : ''}`}>{meshLoading ? 'progress_activity' : 'deployed_code'}</span>
+                                        {meshLoading ? 'Building 3D mesh…' : 'Generate 3D Mesh'}
+                                    </button>
+                                    {meshError && <p className="text-xs text-rose-400 text-center">{meshError}</p>}
                                     <button
                                         onClick={() => window.open(tryOnResult[activeView], '_blank')}
                                         className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 font-bold hover:scale-[1.02] transition-transform active:scale-95"
@@ -1240,6 +1298,32 @@ const TryOn = () => {
                 </div>
                 );
             })()}
+
+            {/* 3D Mesh viewer overlay */}
+            {meshUrl && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
+                    <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl"
+                         onClick={() => { URL.revokeObjectURL(meshUrl); setMeshUrl(null); }} />
+                    <div className="relative z-10 w-full max-w-3xl h-[80vh] bg-slate-900 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                            <div>
+                                <h3 className="text-lg font-semibold flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-cyan-400">deployed_code</span>
+                                    3D Mesh
+                                </h3>
+                                <p className="text-white/40 text-xs">Drag to rotate · scroll to zoom · TripoSR</p>
+                            </div>
+                            <button onClick={() => { URL.revokeObjectURL(meshUrl); setMeshUrl(null); }}
+                                className="size-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="flex-1 bg-gradient-to-b from-slate-900 to-slate-950">
+                            <MeshViewer glbUrl={meshUrl} />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Error Toast */}
             {error && (

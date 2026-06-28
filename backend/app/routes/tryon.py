@@ -267,3 +267,31 @@ def generate_multiview():
     except Exception as e:
         print(f"  ❌ Multiview TryOn Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@tryon_bp.route('/mesh', methods=['POST'])
+def generate_mesh():
+    """Turn a try-on result image into a real 3D mesh (.glb) via TripoSR on the
+    Colab server. Body: { image: dataurl/base64/url }. Returns
+    { success, mesh_b64 (base64 of a .glb), format: 'glb', seconds }."""
+    try:
+        if not catvton_engine.is_configured():
+            catvton_engine.discover()
+        if not catvton_engine.is_configured():
+            return jsonify({'success': False,
+                            'error': 'Try-on server not available. Start the Colab '
+                                     'notebook (it publishes its URL automatically).'}), 503
+
+        data = request.json or {}
+        image = data.get('image')
+        if not image:
+            return jsonify({'success': False, 'error': 'image is required'}), 400
+
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        img_b64 = catvton_engine.resolve_image_to_b64(image, upload_folder)
+        out = catvton_engine.mesh(img_b64)
+        return jsonify({'success': True, **out})
+
+    except Exception as e:
+        print(f"  ❌ Mesh Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
