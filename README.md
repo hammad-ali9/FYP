@@ -231,12 +231,15 @@ VirtualFit/
     - **Click**: Pinch index and middle fingers together.
     - **Exit**: Click "Stop & Close" on the Try-On screen or "Stop Virtual Try" on the Dashboard.
 
-### 5. 360° Virtual Try-On (CatVTON on Colab)
-The try-on engine is **CatVTON**, hosted on a free Colab T4 GPU and reached over a
-tunnel. It runs once per captured body view (front/left/right/back) to build a
-rotatable 360° result. Start the server with `colab/catvton_server.ipynb`, then
-point the backend at the printed URL via `TRYON_API_URL` or
-`POST /api/tryon/server`. Full instructions: **[`colab/README.md`](colab/README.md)**.
+### 5. 360° Virtual Try-On (IDM-VTON on Colab)
+The photoreal try-on engine is **IDM-VTON**, hosted on a Colab GPU (L4/A100
+recommended; free T4 works with CPU-offload) and reached over a tunnel. It builds a
+proper agnostic mask from DensePose + human-parsing + OpenPose, then renders each
+captured body view (front/left/right/back) into a rotatable 360° result. Start the
+server with **`colab/idm_vton_server.ipynb`** — it auto-publishes its tunnel URL and
+the backend discovers it automatically (no config). A lighter **CatVTON** fallback
+(`colab/catvton_server.ipynb`) speaks the same contract. Full instructions:
+**[`colab/README.md`](colab/README.md)**.
 
 ## 🎨 UI Design
 

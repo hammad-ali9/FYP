@@ -1,6 +1,39 @@
-# 360° Multi-View Try-On — CatVTON on Colab
+# Virtual Try-On — Colab GPU servers
 
-VirtualFit's try-on engine is **CatVTON** (ICLR 2025), hosted on a free Google
+VirtualFit runs the heavy try-on model on a Colab GPU and reaches it from the Flask
+backend over a cloudflared tunnel. Two interchangeable servers are provided — both
+expose the **same `/health` + `/tryon` contract** and **publish to the same discovery
+store**, so the backend auto-discovers whichever one you run (no `.env` changes):
+
+| Notebook | Model | Quality | Notes |
+|----------|-------|---------|-------|
+| **`idm_vton_server.ipynb`** | **IDM-VTON** (SDXL inpaint) | **Best — recommended** | Proper DensePose + human-parsing + OpenPose agnostic mask; text-conditioned. Needs a bigger GPU. |
+| `catvton_server.ipynb` | CatVTON | Lighter / fallback | Smaller, runs comfortably on a free T4. |
+
+## IDM-VTON server (recommended — `idm_vton_server.ipynb`)
+
+This is the accurate, photoreal engine. It loads the real IDM-VTON pipeline
+(garment UNet encoder + IP-Adapter image encoder) and builds the agnostic mask from
+OpenPose keypoints + human parsing + a DensePose body map — which is why the garment
+lands correctly and the face/identity/background are preserved.
+
+1. **Runtime → Change runtime type → GPU.** Prefer **L4 (24 GB)** or **A100**
+   (Colab Pro). A free **T4 (16 GB)** works too — the notebook auto-enables model
+   CPU-offload when it detects <20 GB VRAM (slower, ~60–120 s/image; restart and
+   re-run if you hit CUDA OOM).
+2. **Run all** top-to-bottom. First run downloads ~25 GB of IDM-VTON weights
+   (~10–15 min).
+3. The last cell prints **and publishes** the tunnel URL. VirtualFit picks it up
+   automatically on the next try-on. Re-run the last cell after a session restart.
+
+The frontend's multi-view 360° flow and the single-shot `/api/tryon/generate`
+endpoint both go through this server unchanged — no backend edits needed.
+
+---
+
+# 360° Multi-View Try-On — CatVTON on Colab (fallback)
+
+The lighter alternative is **CatVTON** (ICLR 2025), hosted on a free Google
 Colab **T4 GPU** and reached from the Flask backend over a tunnel. We approximate
 the MV-Fashion 360° look by running CatVTON **once per captured body view**
 (front / left / right / back) and assembling the results into a rotatable viewer.

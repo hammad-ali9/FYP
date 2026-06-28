@@ -10,6 +10,25 @@ from app.utils.narrator import narrator
 
 tryon_bp = Blueprint('tryon', __name__)
 
+
+def _ensure_camera(wait_frame=2.0):
+    """Make sure the gesture-engine camera is running and has produced a frame.
+
+    The TryOn capture screen assumes the Dashboard already started the camera,
+    but it can be stopped (navigation / cleanup), which made /capture and
+    /analyze return 400. Auto-starting here makes the flow self-healing.
+    Returns (ok: bool, error: str|None)."""
+    if not engine.is_running:
+        if not engine.start():
+            return False, ('Camera is not available. Grant Camera permission to the '
+                           'app running the backend (System Settings > Privacy & '
+                           'Security > Camera), then retry.')
+    deadline = time.time() + wait_frame
+    while engine.get_frame_raw() is None and time.time() < deadline:
+        time.sleep(0.1)
+    return True, None
+
+
 @tryon_bp.route('/init', methods=['POST'])
 def init_space():
     """Initializes/duplicates the Hugging Face space."""
@@ -29,12 +48,13 @@ def init_space():
 def capture_frame():
     """Captures the current frame from the gesture engine's camera."""
     try:
-        if not engine.is_running:
-            return jsonify({'success': False, 'error': 'Camera is not running'}), 400
-        
+        ok, err = _ensure_camera()
+        if not ok:
+            return jsonify({'success': False, 'error': err}), 503
+
         frame = engine.get_frame()
         if frame is None:
-            return jsonify({'success': False, 'error': 'No frame available'}), 500
+            return jsonify({'success': False, 'error': 'No frame available yet, please retry'}), 503
         
         # Frame is already JPEG bytes from engine.get_frame()
         b64_frame = base64.b64encode(frame).decode('utf-8')
@@ -52,13 +72,14 @@ def analyze_pose():
     try:
         data = request.json or {}
         step = data.get('step', 'FRONT')
-        
-        if not engine.is_running:
-            return jsonify({'success': False, 'error': 'Camera is not running'}), 400
-        
+
+        ok, err = _ensure_camera()
+        if not ok:
+            return jsonify({'success': False, 'error': err}), 503
+
         frame = engine.get_frame_raw()
         if frame is None:
-            return jsonify({'success': False, 'error': 'No frame available'}), 500
+            return jsonify({'success': False, 'error': 'No frame available yet, please retry'}), 503
         
         selected_upper = data.get('selected_upper', False)
         selected_lower = data.get('selected_lower', False)
@@ -84,67 +105,54 @@ def analyze_pose():
 
 @tryon_bp.route('/generate', methods=['POST'])
 def generate_tryon():
-    """Performs the full IDM-VTON try-on process."""
+    """Single-shot photoreal try-on via the self-hosted IDM-VTON Colab server.
+
+    This is the 'best photoreal' path: one high-quality IDM-VTON render of the
+    given person image. It replaces the old public Hugging Face Space call, which
+    was slow, frequently queued, and unreliable. The IDM-VTON server is reached
+    through the same auto-discovered tunnel as the multi-view endpoint.
+
+    Body:
+        person_image:  base64/dataurl of the person (required)
+        garment_image: URL or base64 of the garment (required)
+        clothing_type: 'upper' | 'lower' | 'full'   (default 'upper')
+        garment_desc:  short text description, improves IDM-VTON conditioning
+        steps, guidance, seed: optional generation params
+    """
     try:
+        if not catvton_engine.is_configured():
+            catvton_engine.discover()
+        if not catvton_engine.is_configured():
+            return jsonify({'success': False,
+                            'error': 'Try-on server not available. Start the IDM-VTON '
+                                     'Colab notebook (it publishes its URL automatically).'}), 503
+
         data = request.json or {}
-        token = data.get('token') or current_app.config.get('HF_TOKEN', '')
-        space_url = data.get('space_url') or tryon_engine.ensure_space(token)
-        
-        person_b64 = data.get('person_image') # Base64
-        garment_url = data.get('garment_image') # Full URL
-        
-        if not person_b64 or not garment_url:
+        person_b64 = data.get('person_image')
+        garment_src = data.get('garment_image')
+        if not person_b64 or not garment_src:
             return jsonify({'success': False, 'error': 'Missing person or garment image'}), 400
 
-        # 1. Upload person image
-        print(f"  ⟳ TryOn: Uploading person image...")
-        person_up = tryon_engine.upload_file(token, space_url, person_b64)
-        
-        # 2. Upload/Proxy garment image (from URL)
-        print(f"  ⟳ TryOn: Preparing garment image (URL: {garment_url})...")
-        
-        garment_data = None
-        is_local = "localhost:5000" in garment_url or garment_url.startswith("/uploads")
-        
-        if is_local:
-            print(f"  ✓ TryOn: Detected local garment image. Reading from disk...")
-            # Extract filename from URL (usually /uploads/filename.jpg)
-            filename = garment_url.split('/')[-1]
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            
-            if os.path.exists(filepath):
-                with open(filepath, 'rb') as f:
-                    garment_data = f.read()
-            else:
-                print(f"  ❌ TryOn: Local file not found: {filepath}")
-        
-        if not garment_data:
-            print(f"  ⟳ TryOn: Downloading garment image from external URL...")
-            import urllib.request
-            with urllib.request.urlopen(garment_url) as r:
-                garment_data = r.read()
-        
-        garment_b64 = base64.b64encode(garment_data).decode('utf-8')
-        
-        print(f"  ⟳ TryOn: Uploading garment image to Space...")
-        garment_up = tryon_engine.upload_file(token, space_url, garment_b64)
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        garment_b64 = catvton_engine.resolve_image_to_b64(garment_src, upload_folder)
 
-        # 3. Predict
-        print(f"  ⟳ TryOn: Triggering prediction...")
-        event_id = tryon_engine.predict(token, space_url, person_up, garment_up)
-        
-        # 4. Wait for Result (Now synchronous stream)
-        print(f"  ⟳ TryOn: Waiting for stream completion...")
-        output = tryon_engine.poll(token, space_url, event_id)
-        
-        if not output:
-             return jsonify({'success': False, 'error': 'Generation timed out or stream closed'}), 504
-        
-        # 5. Get final URL
-        final_url = tryon_engine.get_final_url(space_url, output)
+        out = catvton_engine.tryon(
+            person_b64=person_b64,
+            cloth_b64=garment_b64,
+            cloth_type=data.get('clothing_type', 'upper'),
+            steps=int(data.get('steps', 30)),
+            guidance=float(data.get('guidance', 2.0)),
+            seed=int(data.get('seed', 42)),
+            cloth_desc=(data.get('garment_desc') or 'a garment'),
+        )
+
+        # Return both keys for compatibility: result_image is the data URL the IDM
+        # server produced; result_url mirrors it so older callers keep working.
         return jsonify({
             'success': True,
-            'result_url': final_url
+            'result_image': out.get('image'),
+            'result_url': out.get('image'),
+            'seconds': out.get('seconds'),
         })
 
     except Exception as e:
@@ -219,8 +227,9 @@ def generate_multiview():
             garment_back_b64=garment_back_b64,
             cloth_type=data.get('clothing_type', 'upper'),
             steps=int(data.get('steps', 30)),
-            guidance=float(data.get('guidance', 2.5)),
+            guidance=float(data.get('guidance', 2.0)),
             seed=int(data.get('seed', 42)),
+            garment_desc=(data.get('garment_desc') or 'a garment'),
         )
 
         if not out['results']:

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 920 560" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+<defs>
+  <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+    <polygon points="0 0, 8 3, 0 6" fill="black"/>
+  </marker>
+</defs>
+<rect width="920" height="560" fill="white"/>
+
+<!-- ══ RETAIL KIOSK ══ -->
+<rect x="18" y="46" width="208" height="252" fill="white" stroke="black" stroke-width="1.5"/>
+<text x="122" y="63" text-anchor="middle" font-size="11" font-weight="bold">Retail Kiosk (PC)</text>
+
+<rect x="30" y="70" width="184" height="118" fill="white" stroke="black" stroke-width="1"/>
+<text x="122" y="87" text-anchor="middle" font-size="10" font-weight="bold">React SPA</text>
+<text x="122" y="99" text-anchor="middle" font-size="9">(Vite Build — Browser)</text>
+<line x1="30" y1="102" x2="214" y2="102" stroke="black" stroke-width="0.6"/>
+<text x="122" y="114" text-anchor="middle" font-size="9">Dashboard · Try-On UI</text>
+<text x="122" y="126" text-anchor="middle" font-size="9">360° Product Viewer</text>
+<text x="122" y="138" text-anchor="middle" font-size="9">MJPEG Gesture Feed</text>
+<text x="122" y="150" text-anchor="middle" font-size="9">JWT-Guarded Routes</text>
+<text x="122" y="162" text-anchor="middle" font-size="9">(React Router v6)</text>
+<text x="122" y="178" text-anchor="middle" font-size="9">Axios API Service Layer</text>
+
+<rect x="30" y="196" width="184" height="52" fill="white" stroke="black" stroke-width="1"/>
+<text x="122" y="213" text-anchor="middle" font-size="10" font-weight="bold">Camera Module</text>
+<line x1="30" y1="216" x2="214" y2="216" stroke="black" stroke-width="0.6"/>
+<text x="122" y="229" text-anchor="middle" font-size="9">USB Webcam</text>
+<text x="122" y="241" text-anchor="middle" font-size="9">OpenCV VideoCapture</text>
+
+<rect x="30" y="256" width="184" height="30" fill="white" stroke="black" stroke-width="1"/>
+<text x="122" y="276" text-anchor="middle" font-size="9">Local File Storage  (uploads/)</text>
+
+<!-- ══ FLASK APPLICATION SERVER ══ -->
+<rect x="278" y="30" width="296" height="278" fill="white" stroke="black" stroke-width="1.5"/>
+<text x="426" y="48" text-anchor="middle" font-size="11" font-weight="bold">Flask Application Server</text>
+
+<rect x="290" y="55" width="134" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="357" y="72" text-anchor="middle" font-size="9">«blueprint»  auth</text>
+<rect x="430" y="55" width="134" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="497" y="72" text-anchor="middle" font-size="9">«blueprint»  products</text>
+
+<rect x="290" y="87" width="134" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="357" y="104" text-anchor="middle" font-size="9">«blueprint»  outlets</text>
+<rect x="430" y="87" width="134" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="497" y="104" text-anchor="middle" font-size="9">«blueprint»  sessions</text>
+
+<rect x="290" y="119" width="134" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="357" y="136" text-anchor="middle" font-size="9">«blueprint»  gestures</text>
+<rect x="430" y="119" width="134" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="497" y="136" text-anchor="middle" font-size="9">«blueprint»  tryon</text>
+
+<rect x="290" y="151" width="274" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="427" y="168" text-anchor="middle" font-size="9">«blueprint»  subscriptions</text>
+
+<rect x="290" y="183" width="274" height="36" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="427" y="199" text-anchor="middle" font-size="9">GestureEngine  ·  PoseAnalyzer</text>
+<text x="427" y="212" text-anchor="middle" font-size="9">CatVTONEngine  ·  TryOnEngine (fallback)</text>
+
+<text x="426" y="240" text-anchor="middle" font-size="8" font-style="italic">JWT Auth  ·  SQLAlchemy ORM  ·  CORS  ·  Flask-Migrate</text>
+<text x="426" y="253" text-anchor="middle" font-size="8" font-style="italic">Gunicorn  ·  Python 3.x  ·  .env configuration</text>
+<text x="426" y="268" text-anchor="middle" font-size="8" font-style="italic">multipart/x-mixed-replace  (MJPEG streaming)</text>
+<text x="426" y="282" text-anchor="middle" font-size="8" font-style="italic">UPLOAD_FOLDER: /static/uploads</text>
+<text x="426" y="296" text-anchor="middle" font-size="8" font-style="italic">SQLite (dev)  ·  PostgreSQL (production)</text>
+
+<!-- ══ POSTGRESQL — cylinder ══ -->
+<path d="M 298 382 A 128 14 0 0 1 554 382" fill="white" stroke="black" stroke-width="1.5"/>
+<path d="M 298 382 A 128 14 0 0 0 554 382" fill="none"  stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="298" y1="382" x2="298" y2="470" stroke="black" stroke-width="1.5"/>
+<line x1="554" y1="382" x2="554" y2="470" stroke="black" stroke-width="1.5"/>
+<rect x="299" y="382" width="254" height="88" fill="white" stroke="none"/>
+<ellipse cx="426" cy="470" rx="128" ry="14" fill="white" stroke="black" stroke-width="1.5"/>
+<text x="426" y="413" text-anchor="middle" font-size="10" font-weight="bold">PostgreSQL Database</text>
+<text x="426" y="427" text-anchor="middle" font-size="9">outlets  ·  products  ·  try_on_sessions</text>
+<text x="426" y="440" text-anchor="middle" font-size="9">try_on_events  ·  subscriptions</text>
+<text x="426" y="453" text-anchor="middle" font-size="9">payment_methods  ·  invoices  ·  vouchers  ·  tokens</text>
+
+<!-- ══ AI TRY-ON SERVER ══ -->
+<rect x="632" y="30" width="272" height="350" fill="white" stroke="black" stroke-width="1.5"/>
+<text x="768" y="48" text-anchor="middle" font-size="10">«server»</text>
+<text x="768" y="62" text-anchor="middle" font-size="11" font-weight="bold">AI Try-On Server</text>
+
+<rect x="644" y="70" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="87" text-anchor="middle" font-size="9">FastAPI REST Interface  (GET /health  ·  POST /tryon)</text>
+
+<rect x="644" y="102" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="119" text-anchor="middle" font-size="9">Pose Estimation Engine  (18-joint body keypoints)</text>
+
+<rect x="644" y="134" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="151" text-anchor="middle" font-size="9">Human Parsing Engine  (20-class segmentation)</text>
+
+<rect x="644" y="166" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="183" text-anchor="middle" font-size="9">Agnostic Mask Generator</text>
+
+<rect x="644" y="198" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="215" text-anchor="middle" font-size="9">Body Map Generator  (UV Pose Map)</text>
+
+<rect x="644" y="230" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="247" text-anchor="middle" font-size="9">Try-On Diffusion Pipeline  (768 x 1024 px)</text>
+
+<rect x="644" y="262" width="248" height="36" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="278" text-anchor="middle" font-size="9">GPU Inference Lock  (threading.Lock)</text>
+<text x="768" y="291" text-anchor="middle" font-size="9">CPU Offload fallback  (low-VRAM mode)</text>
+
+<rect x="644" y="304" width="248" height="26" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="768" y="321" text-anchor="middle" font-size="8" font-style="italic">Service Discovery Module  (auto URL registration)</text>
+
+<text x="768" y="348" text-anchor="middle" font-size="8" font-style="italic">4-view output:  FRONT / LEFT / RIGHT / BACK</text>
+<text x="768" y="361" text-anchor="middle" font-size="8" font-style="italic">Result format:  PNG base64-encoded</text>
+
+<!-- ══ ARROWS ══ -->
+<!-- SPA ↔ Flask -->
+<line x1="226" y1="118" x2="276" y2="118" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="251" y="112" text-anchor="middle" font-size="8">HTTP / REST</text>
+<line x1="276" y1="132" x2="226" y2="132" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="251" y="146" text-anchor="middle" font-size="8">JSON Response</text>
+
+<!-- Camera → Flask elbow -->
+<line x1="226" y1="220" x2="256" y2="220" stroke="black" stroke-width="1.2"/>
+<line x1="256" y1="220" x2="256" y2="192" stroke="black" stroke-width="1.2"/>
+<line x1="256" y1="192" x2="276" y2="192" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="253" y="208" text-anchor="end" font-size="8">MJPEG</text>
+
+<!-- Flask ↔ PostgreSQL -->
+<line x1="426" y1="310" x2="426" y2="366" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="448" y="340" text-anchor="start" font-size="8">ORM Queries</text>
+<line x1="410" y1="366" x2="410" y2="310" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="404" y="340" text-anchor="end" font-size="8">Result Sets</text>
+
+<!-- Flask ↔ AI Server -->
+<line x1="574" y1="140" x2="630" y2="140" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="602" y="134" text-anchor="middle" font-size="8">POST /tryon</text>
+<line x1="630" y1="154" x2="574" y2="154" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="602" y="168" text-anchor="middle" font-size="8">PNG Result (base64)</text>
+
+<!-- Caption -->
+<text x="460" y="542" text-anchor="middle" font-size="11" font-weight="bold">Figure 4.1: Architecture Diagram</text>
+</svg>

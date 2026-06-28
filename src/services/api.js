@@ -322,10 +322,11 @@ export const tryonAPI = {
         });
     },
 
-    // CatVTON multi-view 360 try-on (Colab server).
+    // IDM-VTON multi-view 360 try-on (Colab server).
     // personImages: { front, back, left, right } as base64/dataurl (front required)
+    // garmentDesc: short text description of the garment (improves IDM-VTON results)
     generateMultiview: async ({ personImages, garmentFront, garmentBack = null,
-                                clothingType = 'upper', steps = 30 }) => {
+                                clothingType = 'upper', steps = 30, garmentDesc = '' }) => {
         return apiRequest('/tryon/generate_multiview', {
             method: 'POST',
             body: JSON.stringify({
@@ -333,6 +334,7 @@ export const tryonAPI = {
                 garment_front: garmentFront,
                 garment_back: garmentBack,
                 clothing_type: clothingType,
+                garment_desc: garmentDesc,
                 steps,
             }),
         });

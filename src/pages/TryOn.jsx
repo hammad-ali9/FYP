@@ -19,6 +19,11 @@ const TryOn = () => {
     const [cameraError, setCameraError] = useState('');
     const videoRef = useRef(null);
     const streamRef = useRef(null);
+    // MJPEG feed can connect before the camera produces its first frame and then
+    // stay stalled (black). feedNonce lets us force-reconnect until it loads.
+    const feedImgRef = useRef(null);
+    const [feedNonce, setFeedNonce] = useState(() => Date.now());
+    const [feedLoaded, setFeedLoaded] = useState(false);
 
     // Tutorial and Scanning states
     const [showTutorial, setShowTutorial] = useState(true); // Always show on mount/refresh
@@ -113,10 +118,29 @@ const TryOn = () => {
 
     // Simplified Camera Management - Handled by Backend
     useEffect(() => {
-        // If the view mounts, we assume the backend is already started by the Dashboard
+        // The backend auto-starts the camera on capture/analyze, so we don't start
+        // it here (doing so caused rapid start/stop churn under React StrictMode,
+        // which crashed the OpenCV/MediaPipe camera on macOS).
         setCameraActive(true);
         setGestureMode(true);
     }, []);
+
+    // Keep the live MJPEG feed alive: if the <img> hasn't delivered its first
+    // frame yet (it connected before the camera was ready, so it's stalled/black),
+    // force a reconnect every ~2s — but ONLY until it loads. Once onLoad fires
+    // (feedLoaded=true) this effect re-runs and returns early, so it stops
+    // reconnecting (otherwise it flickers on/off).
+    useEffect(() => {
+        if (!cameraActive || feedLoaded) return;
+        let tries = 0;
+        // 6s interval: longer than the backend's first-frame wait (~3s) so we
+        // never abort a connection that's still loading its first frame.
+        const iv = setInterval(() => {
+            if (++tries > 6) { clearInterval(iv); return; }
+            setFeedNonce(Date.now()); // bump src -> fresh MJPEG connection
+        }, 6000);
+        return () => clearInterval(iv);
+    }, [cameraActive, feedLoaded]);
 
     // Cleanup camera and gestures on unmount
     useEffect(() => {
@@ -162,7 +186,7 @@ const TryOn = () => {
             } catch (err) {
                 console.error('Analysis failed:', err);
             } finally {
-                if (isActive) setTimeout(poll, 800); // 800ms gap between calls
+                if (isActive) setTimeout(poll, 1500); // gap between pose-analysis calls (reduce CPU/lag)
             }
         };
 
@@ -380,6 +404,10 @@ const TryOn = () => {
                 ? 'lower'
                 : (garment.clothing_type === 'full' ? 'full' : 'upper');
 
+            // Short text description for IDM-VTON's conditioning ("model is wearing <desc>").
+            const garmentDesc = [garment.name, garment.description]
+                .filter(Boolean).join(', ').slice(0, 120) || 'a garment';
+
             // Send every captured body view; CatVTON runs once per view on the
             // Colab server (front garment for front/left/right, back for BACK).
             const personViews = Object.fromEntries(
@@ -391,6 +419,7 @@ const TryOn = () => {
                 garmentFront: garment.image_url || getProductImage(garment),
                 garmentBack: garment.back_image_url || null,
                 clothingType,
+                garmentDesc,
                 steps: 30,
             });
 
@@ -753,9 +782,12 @@ const TryOn = () => {
                     <div className="absolute inset-0 bg-slate-950">
                         {cameraActive ? (
                             <img
-                                src="http://localhost:5000/api/gestures/video_feed"
+                                ref={feedImgRef}
+                                src={`http://127.0.0.1:5000/api/gestures/video_feed?t=${feedNonce}`}
                                 alt="Gesture Feed"
                                 className="w-full h-full object-cover"
+                                onLoad={() => setFeedLoaded(true)}
+                                onError={() => { setFeedLoaded(false); setTimeout(() => setFeedNonce(Date.now()), 1000); }}
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">

@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1480 1060" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+<defs>
+  <!-- filled arrowhead (association / directed) -->
+  <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+    <polygon points="0 0, 8 3, 0 6" fill="black"/>
+  </marker>
+  <!-- open arrowhead (dependency / use) -->
+  <marker id="dep" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+    <polyline points="0 0, 9 4, 0 8" stroke="black" stroke-width="1.2" fill="none"/>
+  </marker>
+  <!-- hollow triangle (inheritance / realisation) -->
+  <marker id="inh" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+    <polygon points="0 0, 9 5, 0 10" fill="white" stroke="black" stroke-width="1.2"/>
+  </marker>
+  <!-- hollow diamond (aggregation) -->
+  <marker id="agg" markerWidth="12" markerHeight="8" refX="0" refY="4" orient="auto">
+    <polygon points="0 4, 6 0, 12 4, 6 8" fill="white" stroke="black" stroke-width="1"/>
+  </marker>
+  <!-- filled diamond (composition) -->
+  <marker id="cmp" markerWidth="12" markerHeight="8" refX="0" refY="4" orient="auto">
+    <polygon points="0 4, 6 0, 12 4, 6 8" fill="black" stroke="black" stroke-width="1"/>
+  </marker>
+</defs>
+<rect width="1480" height="1060" fill="white"/>
+
+<!-- ══════════════════════════════════════════════
+     HELPER: UML class box = name | attrs | methods
+     Each class: <rect name-section> <line> <rect attr> <line> <rect method>
+     ══════════════════════════════════════════════ -->
+
+<!-- ══ Outlet  x=20 y=20 w=210 ══ -->
+<rect x="20"  y="20"  width="210" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="125" y="37"  text-anchor="middle" font-size="10" font-weight="bold">Outlet</text>
+<rect x="20"  y="44"  width="210" height="128" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="57"  font-size="9">+id: Integer (PK)</text>
+<text x="25"  y="69"  font-size="9">+name: String</text>
+<text x="25"  y="81"  font-size="9">+email: String (unique)</text>
+<text x="25"  y="93"  font-size="9">-password_hash: String</text>
+<text x="25"  y="105" font-size="9">+location: String</text>
+<text x="25"  y="117" font-size="9">+api_key: String</text>
+<text x="25"  y="129" font-size="9">+is_active: Boolean</text>
+<text x="25"  y="141" font-size="9">+created_at: DateTime</text>
+<text x="25"  y="157" font-size="9">+logo_url: String</text>
+<rect x="20"  y="172" width="210" height="52"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="185" font-size="9">+verify_password(pwd): bool</text>
+<text x="25"  y="197" font-size="9">+set_password(pwd): void</text>
+<text x="25"  y="209" font-size="9">+generate_api_key(): str</text>
+<text x="25"  y="221" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ Product  x=260 y=20 w=220 ══ -->
+<rect x="260" y="20"  width="220" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="370" y="37"  text-anchor="middle" font-size="10" font-weight="bold">Product</text>
+<rect x="260" y="44"  width="220" height="156" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="265" y="57"  font-size="9">+id: Integer (PK)</text>
+<text x="265" y="69"  font-size="9">+outlet_id: Integer (FK → Outlet)</text>
+<text x="265" y="81"  font-size="9">+name: String</text>
+<text x="265" y="93"  font-size="9">+category: String</text>
+<text x="265" y="105" font-size="9">+price: Float</text>
+<text x="265" y="117" font-size="9">+stock_status: String</text>
+<text x="265" y="129" font-size="9">+clothing_type: Enum(upper/lower/full)</text>
+<text x="265" y="141" font-size="9">+image_url: String</text>
+<text x="265" y="153" font-size="9">+back_image_url: String</text>
+<text x="265" y="165" font-size="9">+additional_images: JSON</text>
+<text x="265" y="177" font-size="9">+created_at: DateTime</text>
+<text x="265" y="189" font-size="9">+is_active: Boolean</text>
+<rect x="260" y="200" width="220" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="265" y="213" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ TryOnSession  x=520 y=20 w=220 ══ -->
+<rect x="520" y="20"  width="220" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="630" y="37"  text-anchor="middle" font-size="10" font-weight="bold">TryOnSession</text>
+<rect x="520" y="44"  width="220" height="128" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="525" y="57"  font-size="9">+id: Integer (PK)</text>
+<text x="525" y="69"  font-size="9">+outlet_id: Integer (FK → Outlet)</text>
+<text x="525" y="81"  font-size="9">+kiosk_id: String</text>
+<text x="525" y="93"  font-size="9">+started_at: DateTime</text>
+<text x="525" y="105" font-size="9">+ended_at: DateTime</text>
+<text x="525" y="117" font-size="9">+duration_seconds: Integer</text>
+<text x="525" y="129" font-size="9">+status: Enum(active/completed/abandoned)</text>
+<text x="525" y="141" font-size="9">+products_tried_count: Integer</text>
+<text x="525" y="157" font-size="9">+customer_age: Integer</text>
+<rect x="520" y="172" width="220" height="40"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="525" y="185" font-size="9">+is_active(): bool</text>
+<text x="525" y="197" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ TryOnEvent  x=780 y=20 w=220 ══ -->
+<rect x="780" y="20"  width="220" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="890" y="37"  text-anchor="middle" font-size="10" font-weight="bold">TryOnEvent</text>
+<rect x="780" y="44"  width="220" height="128" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="785" y="57"  font-size="9">+id: Integer (PK)</text>
+<text x="785" y="69"  font-size="9">+session_id: Integer (FK → TryOnSession)</text>
+<text x="785" y="81"  font-size="9">+product_id: Integer (FK, nullable)</text>
+<text x="785" y="93"  font-size="9">+product_name: String (snapshot)</text>
+<text x="785" y="105" font-size="9">+category: String</text>
+<text x="785" y="117" font-size="9">+clothing_type: String</text>
+<text x="785" y="129" font-size="9">+tried_at: DateTime</text>
+<text x="785" y="141" font-size="9">+duration_seconds: Integer</text>
+<text x="785" y="153" font-size="9">+result_image_url: String</text>
+<rect x="780" y="172" width="220" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="785" y="185" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ Subscription  x=20 y=310 w=225 ══ -->
+<rect x="20"  y="310" width="225" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="132" y="327" text-anchor="middle" font-size="10" font-weight="bold">Subscription</text>
+<rect x="20"  y="334" width="225" height="132" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="347" font-size="9">+id: Integer (PK)</text>
+<text x="25"  y="359" font-size="9">+outlet_id: Integer (FK → Outlet)</text>
+<text x="25"  y="371" font-size="9">+plan: Enum(trial/starter/pro/enterprise)</text>
+<text x="25"  y="383" font-size="9">+status: Enum(active/expired/cancelled)</text>
+<text x="25"  y="395" font-size="9">+start_date: DateTime</text>
+<text x="25"  y="407" font-size="9">+end_date: DateTime</text>
+<text x="25"  y="419" font-size="9">+product_limit: Integer</text>
+<text x="25"  y="431" font-size="9">+stripe_subscription_id: String</text>
+<text x="25"  y="443" font-size="9">+created_at: DateTime</text>
+<text x="25"  y="455" font-size="9">+voucher_id: Integer (FK, nullable)</text>
+<rect x="20"  y="466" width="225" height="64"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="479" font-size="9">+is_active(): bool</text>
+<text x="25"  y="491" font-size="9">+is_trial_active(): bool</text>
+<text x="25"  y="503" font-size="9">+get_product_limit(): int</text>
+<text x="25"  y="515" font-size="9">+create_trial()  [static]</text>
+<text x="25"  y="527" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ PaymentMethod  x=280 y=310 w=215 ══ -->
+<rect x="280" y="310" width="215" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="387" y="327" text-anchor="middle" font-size="10" font-weight="bold">PaymentMethod</text>
+<rect x="280" y="334" width="215" height="96"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="285" y="347" font-size="9">+id: Integer (PK)</text>
+<text x="285" y="359" font-size="9">+outlet_id: Integer (FK → Outlet)</text>
+<text x="285" y="371" font-size="9">+card_last4: String</text>
+<text x="285" y="383" font-size="9">+card_brand: String</text>
+<text x="285" y="395" font-size="9">+stripe_payment_method_id: String</text>
+<text x="285" y="407" font-size="9">+is_default: Boolean</text>
+<text x="285" y="419" font-size="9">+created_at: DateTime</text>
+<rect x="280" y="430" width="215" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="285" y="443" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ Invoice  x=530 y=310 w=205 ══ -->
+<rect x="530" y="310" width="205" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="632" y="327" text-anchor="middle" font-size="10" font-weight="bold">Invoice</text>
+<rect x="530" y="334" width="205" height="96"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="535" y="347" font-size="9">+id: Integer (PK)</text>
+<text x="535" y="359" font-size="9">+subscription_id: Integer (FK)</text>
+<text x="535" y="371" font-size="9">+amount: Float</text>
+<text x="535" y="383" font-size="9">+status: Enum(pending/paid/failed)</text>
+<text x="535" y="395" font-size="9">+stripe_invoice_id: String</text>
+<text x="535" y="407" font-size="9">+created_at: DateTime</text>
+<text x="535" y="419" font-size="9">+paid_at: DateTime</text>
+<rect x="530" y="430" width="205" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="535" y="443" font-size="9">+to_dict(): dict</text>
+
+<!-- ══ Voucher  x=770 y=310 w=205 ══ -->
+<rect x="770" y="310" width="205" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="872" y="327" text-anchor="middle" font-size="10" font-weight="bold">Voucher</text>
+<rect x="770" y="334" width="205" height="108" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="775" y="347" font-size="9">+id: Integer (PK)</text>
+<text x="775" y="359" font-size="9">+code: String (unique)</text>
+<text x="775" y="371" font-size="9">+discount_type: Enum(pct/fixed/free)</text>
+<text x="775" y="383" font-size="9">+discount_value: Float</text>
+<text x="775" y="395" font-size="9">+is_active: Boolean</text>
+<text x="775" y="407" font-size="9">+expires_at: DateTime</text>
+<text x="775" y="419" font-size="9">+max_uses: Integer</text>
+<text x="775" y="431" font-size="9">+current_uses: Integer</text>
+<rect x="770" y="442" width="205" height="36"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="775" y="455" font-size="9">+is_valid(): bool</text>
+<text x="775" y="467" font-size="9">+apply(): dict</text>
+
+<!-- ══ PasswordResetToken  x=1010 y=20 w=215 ══ -->
+<rect x="1010" y="20"  width="215" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="1117" y="37"  text-anchor="middle" font-size="10" font-weight="bold">PasswordResetToken</text>
+<rect x="1010" y="44"  width="215" height="84"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="1015" y="57"  font-size="9">+id: Integer (PK)</text>
+<text x="1015" y="69"  font-size="9">+outlet_id: Integer (FK → Outlet)</text>
+<text x="1015" y="81"  font-size="9">+token: String (unique)</text>
+<text x="1015" y="93"  font-size="9">+expires_at: DateTime</text>
+<text x="1015" y="105" font-size="9">+used: Boolean</text>
+<text x="1015" y="117" font-size="9">+created_at: DateTime</text>
+<rect x="1010" y="128" width="215" height="52"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="1015" y="141" font-size="9">+generate_token()  [static]</text>
+<text x="1015" y="153" font-size="9">+verify_token(token)  [static]</text>
+<text x="1015" y="165" font-size="9">+mark_used(): void</text>
+<text x="1015" y="177" font-size="9">+is_expired(): bool</text>
+
+<!-- ══════════════════════════════════
+     UTILITY CLASSES  (bottom row)
+     y = 600
+     ══════════════════════════════════ -->
+
+<!-- ══ GestureEngine  x=20 y=600 w=245 ══ -->
+<rect x="20"  y="600" width="245" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="142" y="617" text-anchor="middle" font-size="10" font-weight="bold">GestureEngine</text>
+<rect x="20"  y="624" width="245" height="108" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="637" font-size="9">-cap: VideoCapture</text>
+<text x="25"  y="649" font-size="9">-running: bool</text>
+<text x="25"  y="661" font-size="9">-current_frame: bytes</text>
+<text x="25"  y="673" font-size="9">-detector: HandDetector</text>
+<text x="25"  y="685" font-size="9">-thread: Thread (daemon)</text>
+<text x="25"  y="697" font-size="9">+CAMERA_INDEX: int</text>
+<text x="25"  y="709" font-size="9">+FRAME_RATE: int</text>
+<text x="25"  y="721" font-size="9">+PINCH_THRESHOLD: float</text>
+<rect x="20"  y="732" width="245" height="80"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="745" font-size="9">+start(): void</text>
+<text x="25"  y="757" font-size="9">+stop(): void</text>
+<text x="25"  y="769" font-size="9">-_update(): void  [thread loop]</text>
+<text x="25"  y="781" font-size="9">+get_frame(): bytes</text>
+<text x="25"  y="793" font-size="9">+generate_frames(): Generator</text>
+<text x="25"  y="805" font-size="9">+is_running(): bool</text>
+
+<!-- ══ HandDetector  x=20 y=840 w=245 ══ -->
+<rect x="20"  y="850" width="245" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="142" y="867" text-anchor="middle" font-size="10" font-weight="bold">HandDetector</text>
+<rect x="20"  y="874" width="245" height="60"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="887" font-size="9">-model: HandLandmarker (MediaPipe)</text>
+<text x="25"  y="899" font-size="9">-results: HandLandmarkerResult</text>
+<text x="25"  y="911" font-size="9">-lm_list: List[Tuple]</text>
+<text x="25"  y="923" font-size="9">-bbox: Tuple</text>
+<rect x="20"  y="934" width="245" height="52"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="25"  y="947" font-size="9">+find_hands(img): img</text>
+<text x="25"  y="959" font-size="9">+find_position(img): List</text>
+<text x="25"  y="971" font-size="9">+is_pinch(lm_list): bool</text>
+<text x="25"  y="983" font-size="9">+is_pointing(lm_list): bool</text>
+
+<!-- ══ PoseAnalyzer  x=300 y=600 w=235 ══ -->
+<rect x="300" y="600" width="235" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="417" y="617" text-anchor="middle" font-size="10" font-weight="bold">PoseAnalyzer</text>
+<rect x="300" y="624" width="235" height="72"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="305" y="637" font-size="9">-model: PoseLandmarker (MediaPipe Tasks)</text>
+<text x="305" y="649" font-size="9">-VISIBILITY_THRESHOLD: float = 0.5</text>
+<text x="305" y="661" font-size="9">-IMAGE_WIDTH: int = 640</text>
+<text x="305" y="673" font-size="9">-IMAGE_HEIGHT: int = 480</text>
+<text x="305" y="685" font-size="9">-CENTRE_TOLERANCE: float = 0.15</text>
+<rect x="300" y="696" width="235" height="52"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="305" y="709" font-size="9">+analyze_frame(frame, step,</text>
+<text x="305" y="721" font-size="9">    upper, lower): AnalysisResult</text>
+<text x="305" y="733" font-size="9">-_check_centering(lm): dict</text>
+<text x="305" y="745" font-size="9">-_check_visibility(lm): dict</text>
+
+<!-- ══ CatVTONEngine  x=575 y=600 w=245 ══ -->
+<rect x="575" y="600" width="245" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="697" y="617" text-anchor="middle" font-size="10" font-weight="bold">CatVTONEngine</text>
+<rect x="575" y="624" width="245" height="84"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="580" y="637" font-size="9">-base_url: str</text>
+<text x="580" y="649" font-size="9">-session: requests.Session</text>
+<text x="580" y="661" font-size="9">-DISCOVERY_URL: str</text>
+<text x="580" y="673" font-size="9">-TIMEOUT: int = 300</text>
+<text x="580" y="685" font-size="9">-last_discovery: DateTime</text>
+<text x="580" y="697" font-size="9">-VIEWS: List[str] = [FRONT,LEFT,RIGHT,BACK]</text>
+<rect x="575" y="708" width="245" height="80"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="580" y="721" font-size="9">+discover(): str  (resolve server URL)</text>
+<text x="580" y="733" font-size="9">+tryon(person_img, garment_img,</text>
+<text x="580" y="745" font-size="9">    category): str  (base64 PNG)</text>
+<text x="580" y="757" font-size="9">+tryon_multiview(person, garment,</text>
+<text x="580" y="769" font-size="9">    category): dict  (4 views)</text>
+<text x="580" y="781" font-size="9">-resolve_image_to_b64(src): str</text>
+
+<!-- ══ TryOnEngine  x=860 y=600 w=235 ══ -->
+<rect x="860" y="600" width="235" height="24"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="977" y="617" text-anchor="middle" font-size="10" font-weight="bold">TryOnEngine</text>
+<text x="977" y="596" text-anchor="middle" font-size="9" font-style="italic">«fallback»</text>
+<rect x="860" y="624" width="235" height="60"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="865" y="637" font-size="9">-client: Client (Gradio)</text>
+<text x="865" y="649" font-size="9">-SPACE: str</text>
+<text x="865" y="661" font-size="9">-MAX_POLL: int = 60</text>
+<text x="865" y="673" font-size="9">-duplicated_space: str</text>
+<rect x="860" y="684" width="235" height="64"  fill="white" stroke="black" stroke-width="1.2"/>
+<text x="865" y="697" font-size="9">+ensure_space(): void</text>
+<text x="865" y="709" font-size="9">+upload_file(path): str</text>
+<text x="865" y="721" font-size="9">+predict(person, garment): Job</text>
+<text x="865" y="733" font-size="9">+poll(job): str  (PNG URL)</text>
+<text x="865" y="745" font-size="9">+get_final_url(job): str</text>
+
+<!-- ══════════════════════════════════
+     RELATIONSHIPS
+     ══════════════════════════════════ -->
+
+<!-- Outlet 1 ——< Product  (composition, outlet owns products) -->
+<!-- Outlet right edge (230,172) → Product left edge (260,130) -->
+<line x1="230" y1="130" x2="258" y2="130" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="234" y="124" font-size="8">1</text>
+<text x="240" y="124" font-size="8">────────</text>
+<text x="248" y="124" font-size="8">0..*</text>
+
+<!-- Outlet 1 ——< TryOnSession -->
+<line x1="230" y1="100" x2="518" y2="100" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="234" y="95" font-size="8">1</text>
+<text x="500" y="95" font-size="8">0..*</text>
+
+<!-- Outlet 1 ——< Subscription (diagonal elbow) -->
+<line x1="125" y1="224" x2="125" y2="308" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="129" y="268" font-size="8">1</text>
+<text x="129" y="300" font-size="8">0..*</text>
+
+<!-- Outlet 1 ——< PaymentMethod (elbow) -->
+<line x1="230" y1="172" x2="278" y2="172" stroke="black" stroke-width="1"/>
+<line x1="278" y1="172" x2="278" y2="308" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="282" y="240" font-size="8">0..*</text>
+
+<!-- Outlet 1 ——< PasswordResetToken -->
+<line x1="230" y1="80" x2="1008" y2="80" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="234" y="75" font-size="8">1</text>
+<text x="990" y="75" font-size="8">0..*</text>
+
+<!-- TryOnSession 1 ——< TryOnEvent -->
+<line x1="740" y1="100" x2="778" y2="100" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="744" y="95" font-size="8">1</text>
+<text x="760" y="95" font-size="8">0..*</text>
+
+<!-- TryOnEvent >── Product (nullable FK, dashed) -->
+<line x1="890" y1="200" x2="890" y2="260" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="890" y1="260" x2="480" y2="260" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="480" y1="260" x2="480" y2="202" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+<text x="685" y="256" text-anchor="middle" font-size="8">«use» (nullable FK)</text>
+
+<!-- Subscription >── Voucher (dashed use) -->
+<line x1="245" y1="430" x2="768" y2="430" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+<text x="506" y="424" text-anchor="middle" font-size="8">«use» voucher_id FK</text>
+
+<!-- Subscription 1 ——< Invoice -->
+<line x1="632" y1="466" x2="632" y2="308" stroke="black" stroke-width="1"/>
+<line x1="632" y1="308" x2="632" y2="310" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="637" y="378" font-size="8">0..*</text>
+<text x="637" y="314" font-size="8">1</text>
+<!-- fix: invoice is BELOW subscription; direction swap -->
+<!-- Invoice x=530 y=310; Subscription x=20 y=310 — connect via elbow -->
+<line x1="245" y1="390" x2="528" y2="390" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="249" y="385" font-size="8">1</text>
+<text x="510" y="385" font-size="8">0..*</text>
+
+<!-- GestureEngine uses HandDetector (composition) -->
+<line x1="142" y1="812" x2="142" y2="848" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="146" y="835" font-size="8">owns</text>
+
+<!-- CatVTONEngine ..> TryOnSession (uses) — dashed -->
+<line x1="697" y1="600" x2="697" y2="560" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="697" y1="560" x2="630" y2="560" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="630" y1="560" x2="630" y2="214" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+<text x="690" y="555" text-anchor="end" font-size="8">«use»</text>
+
+<!-- TryOnEngine ..> TryOnSession (uses) — dashed -->
+<line x1="977" y1="600" x2="977" y2="560" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="977" y1="560" x2="700" y2="560" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+
+<!-- PoseAnalyzer ..> TryOnSession (uses) — dashed -->
+<line x1="417" y1="600" x2="417" y2="280" stroke="black" stroke-width="1" stroke-dasharray="4,3"/>
+<line x1="417" y1="280" x2="520" y2="280" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#dep)"/>
+
+<!-- Caption -->
+<text x="740" y="1040" text-anchor="middle" font-size="11" font-weight="bold">Figure 4.4: Class Diagram</text>
+</svg>

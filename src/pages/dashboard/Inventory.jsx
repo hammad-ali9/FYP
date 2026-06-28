@@ -41,8 +41,6 @@ const Inventory = () => {
         price: '',
         stock_status: 'in_stock',
         clothing_type: 'upper',
-        stock_status: 'in_stock',
-        clothing_type: 'upper',
         image_url: '',
         back_image_url: '', // garment back view (for 360 multi-view try-on)
         additional_images_text: '' // For form input (one per line)
@@ -104,8 +102,6 @@ const Inventory = () => {
             price: '',
             stock_status: 'in_stock',
             clothing_type: 'upper',
-            stock_status: 'in_stock',
-            clothing_type: 'upper',
             image_url: '',
             back_image_url: '',
             additional_images_text: ''
@@ -119,8 +115,6 @@ const Inventory = () => {
             name: product.name,
             category: product.category,
             price: product.price.toString(),
-            stock_status: product.stock_status,
-            clothing_type: product.clothing_type || 'upper',
             stock_status: product.stock_status,
             clothing_type: product.clothing_type || 'upper',
             image_url: product.image_url || '',
@@ -138,7 +132,6 @@ const Inventory = () => {
         try {
             const productData = {
                 ...formData,
-                price: parseFloat(formData.price),
                 price: parseFloat(formData.price),
                 outlet_id: outlet?.id || 1,
                 additional_images: formData.additional_images_text.split('\n').map(s => s.trim()).filter(Boolean)

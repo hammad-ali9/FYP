@@ -122,9 +122,20 @@ class CatVTONEngine:
                 with open(path, 'rb') as f:
                     return base64.b64encode(f.read()).decode('utf-8')
 
-        # External URL
-        with urllib.request.urlopen(src) as r:
-            return base64.b64encode(r.read()).decode('utf-8')
+        # External URL — use requests (bundles certifi) so it works on macOS,
+        # where urllib raises SSL: CERTIFICATE_VERIFY_FAILED. Fall back to an
+        # unverified urllib fetch only if requests itself fails.
+        try:
+            r = requests.get(src, timeout=60)
+            r.raise_for_status()
+            return base64.b64encode(r.content).decode('utf-8')
+        except Exception:
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            with urllib.request.urlopen(src, context=ctx, timeout=60) as resp:
+                return base64.b64encode(resp.read()).decode('utf-8')
 
     # ----- inference -------------------------------------------------------
     def _post_tryon(self, payload: dict, timeout: int) -> dict:
@@ -133,12 +144,16 @@ class CatVTONEngine:
         return r.json()
 
     def tryon(self, person_b64: str, cloth_b64: str, cloth_type: str = 'upper',
-              steps: int = 30, guidance: float = 2.5, seed: int = 42,
-              timeout: int = 300) -> dict:
+              steps: int = 30, guidance: float = 2.0, seed: int = 42,
+              cloth_desc: str = 'a garment', timeout: int = 300) -> dict:
         """Single-view try-on. Returns {'image': dataurl, 'seconds': float}.
 
         Auto-discovers the tunnel URL if not configured, and re-discovers once
-        if the request fails (the Colab URL changes every session)."""
+        if the request fails (the Colab URL changes every session).
+
+        cloth_desc is IDM-VTON's text conditioning ("model is wearing <desc>") and
+        meaningfully improves results; the CatVTON server simply ignores the field.
+        guidance default 2.0 is IDM-VTON's recommended scale."""
         if not self.base_url:
             self.discover()
         if not self.base_url:
@@ -152,6 +167,7 @@ class CatVTONEngine:
             'num_inference_steps': steps,
             'guidance_scale': guidance,
             'seed': seed,
+            'cloth_desc': cloth_desc,
         }
         try:
             return self._post_tryon(payload, timeout)
@@ -163,7 +179,8 @@ class CatVTONEngine:
 
     def tryon_multiview(self, person_views: dict, garment_front_b64: str,
                         garment_back_b64: str = None, cloth_type: str = 'upper',
-                        steps: int = 30, guidance: float = 2.5, seed: int = 42) -> dict:
+                        steps: int = 30, guidance: float = 2.0, seed: int = 42,
+                        garment_desc: str = 'a garment') -> dict:
         """Run try-on for every captured view.
 
         person_views: {'front': b64, 'back': b64, 'left': b64, 'right': b64}
@@ -183,7 +200,8 @@ class CatVTONEngine:
             garment = back_garment if view == 'back' else garment_front_b64
             try:
                 out = self.tryon(person, garment, cloth_type=cloth_type,
-                                 steps=steps, guidance=guidance, seed=seed)
+                                 steps=steps, guidance=guidance, seed=seed,
+                                 cloth_desc=garment_desc)
                 results[view] = out.get('image')
                 timings[view] = out.get('seconds')
             except Exception as e:  # one failed view shouldn't kill the rest

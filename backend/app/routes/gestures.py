@@ -35,22 +35,38 @@ def get_status():
     })
 
 def gen_frames():
-    """Video streaming generator function."""
-    while engine.is_running:
+    """Video streaming generator. Resilient: ensures the camera is running, waits
+    for it to produce frames (instead of ending the stream when none are ready
+    yet), and restarts it if it dies — so the browser <img> doesn't go black."""
+    if not engine.is_running:
+        engine.start()
+    idle = 0
+    while True:
         frame = engine.get_frame()
         if frame is None:
-            time.sleep(0.01)
+            time.sleep(0.03)
+            idle += 1
+            # Camera died mid-stream? try to bring it back.
+            if not engine.is_running and idle % 30 == 0:
+                engine.start()
+            if idle > 300:  # ~9s with no frames at all -> stop this stream
+                break
             continue
-        
+        idle = 0
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        time.sleep(0.01)
+        time.sleep(0.03)
 
 @gestures_bp.route('/video_feed')
 def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     if not engine.is_running:
-        engine.start() # Autostart if feed requested
-        
+        engine.start()  # Autostart if feed requested
+    # Wait briefly for the first frame so the stream isn't empty on connect
+    # (which would leave the <img> stalled/black).
+    for _ in range(60):  # up to ~3s
+        if engine.get_frame() is not None:
+            break
+        time.sleep(0.05)
     return Response(gen_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')

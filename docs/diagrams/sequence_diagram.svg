@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 860 1640" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+<defs>
+  <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+    <polygon points="0 0, 8 3, 0 6" fill="black"/>
+  </marker>
+  <marker id="arr-open" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+    <polyline points="0 0, 9 4, 0 8" stroke="black" stroke-width="1.2" fill="none"/>
+  </marker>
+</defs>
+<rect width="860" height="1640" fill="white"/>
+
+<!-- ══════════════════════════════════════
+     LIFELINE HEADER BOXES  (y = 20)
+     ══════════════════════════════════════ -->
+<!-- cx values: Customer=80, Browser=220, FlaskBackend=400, AIServer=590, Database=770 -->
+
+<!-- Customer (actor) -->
+<rect x="30"  y="20" width="100" height="36" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="80"  y="42" text-anchor="middle" font-size="9" font-weight="bold">Customer</text>
+
+<!-- Browser -->
+<rect x="168" y="20" width="104" height="36" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="220" y="35" text-anchor="middle" font-size="9" font-weight="bold">Browser</text>
+<text x="220" y="50" text-anchor="middle" font-size="8">(React SPA)</text>
+
+<!-- FlaskBackend -->
+<rect x="343" y="20" width="114" height="36" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="400" y="35" text-anchor="middle" font-size="9" font-weight="bold">FlaskBackend</text>
+<text x="400" y="50" text-anchor="middle" font-size="8">(Python)</text>
+
+<!-- AIServer -->
+<rect x="534" y="20" width="112" height="36" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="590" y="35" text-anchor="middle" font-size="9" font-weight="bold">AITryOnServer</text>
+<text x="590" y="50" text-anchor="middle" font-size="8">(FastAPI)</text>
+
+<!-- Database -->
+<rect x="718" y="20" width="104" height="36" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="770" y="35" text-anchor="middle" font-size="9" font-weight="bold">Database</text>
+<text x="770" y="50" text-anchor="middle" font-size="8">(PostgreSQL)</text>
+
+<!-- ══════════════════════════════════════
+     LIFELINES  (dashed vertical lines)
+     y range: 56 → 1590
+     ══════════════════════════════════════ -->
+<line x1="80"  y1="56" x2="80"  y2="1590" stroke="black" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="220" y1="56" x2="220" y2="1590" stroke="black" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="400" y1="56" x2="400" y2="1590" stroke="black" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="590" y1="56" x2="590" y2="1590" stroke="black" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="770" y1="56" x2="770" y2="1590" stroke="black" stroke-width="1" stroke-dasharray="5,4"/>
+
+<!-- ══════════════════════════════════════
+     SECTION 1: Registration & Login
+     y: 68 → 220
+     ══════════════════════════════════════ -->
+<rect x="20" y="60" width="826" height="168" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="60" width="108" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25" y="72" font-size="9" font-weight="bold">Registration &amp; Login</text>
+
+<!-- 1.1 Customer → Browser: Open VirtualFit -->
+<line x1="80"  y1="88"  x2="218" y2="88"  stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="150" y="84" text-anchor="middle" font-size="8">Open VirtualFit</text>
+
+<!-- 1.2 Browser → Flask: POST /api/auth/register -->
+<line x1="220" y1="104" x2="398" y2="104" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="100" text-anchor="middle" font-size="8">POST /api/auth/register  {name, email, password}</text>
+
+<!-- 1.3 Flask → DB: Insert outlet record -->
+<line x1="400" y1="118" x2="768" y2="118" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="114" text-anchor="middle" font-size="8">INSERT outlets  +  CREATE trial subscription</text>
+
+<!-- 1.4 DB → Flask: outlet record -->
+<line x1="768" y1="132" x2="402" y2="132" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="585" y="128" text-anchor="middle" font-size="8">outlet record</text>
+
+<!-- 1.5 Browser → Flask: POST /api/auth/login -->
+<line x1="220" y1="150" x2="398" y2="150" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="146" text-anchor="middle" font-size="8">POST /api/auth/login  {email, password}</text>
+
+<!-- 1.6 Flask → DB: Verify credentials -->
+<line x1="400" y1="164" x2="768" y2="164" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="160" text-anchor="middle" font-size="8">SELECT outlet WHERE email=?  +  verify password hash</text>
+
+<!-- 1.7 Flask → Browser: JWT token -->
+<line x1="398" y1="178" x2="222" y2="178" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="174" text-anchor="middle" font-size="8">JWT access token</text>
+
+<!-- 1.8 Browser → Customer: Show Dashboard -->
+<line x1="218" y1="212" x2="82" y2="212" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="208" text-anchor="middle" font-size="8">Show Dashboard</text>
+
+<!-- ══════════════════════════════════════
+     SECTION 2: Product Management
+     y: 240 → 360
+     ══════════════════════════════════════ -->
+<rect x="20" y="232" width="826" height="134" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="232" width="120" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25" y="244" font-size="9" font-weight="bold">Product Management</text>
+
+<!-- 2.1 Customer → Browser: Upload product + garment image -->
+<line x1="80"  y1="260" x2="218" y2="260" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="150" y="256" text-anchor="middle" font-size="8">Upload product &amp; garment image</text>
+
+<!-- 2.2 Browser → Flask: POST /api/products -->
+<line x1="220" y1="275" x2="398" y2="275" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="271" text-anchor="middle" font-size="8">POST /api/products  {multipart/form-data}</text>
+
+<!-- 2.3 Flask → DB: Save product -->
+<line x1="400" y1="290" x2="768" y2="290" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="286" text-anchor="middle" font-size="8">INSERT products  (check subscription product limit)</text>
+
+<!-- 2.4 DB → Flask -->
+<line x1="768" y1="304" x2="402" y2="304" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="585" y="300" text-anchor="middle" font-size="8">product_id</text>
+
+<!-- 2.5 Flask → Browser: Product created -->
+<line x1="398" y1="318" x2="222" y2="318" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="314" text-anchor="middle" font-size="8">201 Created  {product object}</text>
+
+<!-- 2.6 Browser → Customer: Confirm -->
+<line x1="218" y1="352" x2="82"  y2="352" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="348" text-anchor="middle" font-size="8">Show product on dashboard</text>
+
+<!-- ══════════════════════════════════════
+     SECTION 3: Launch Gesture Session
+     y: 378 → 510
+     ══════════════════════════════════════ -->
+<rect x="20" y="370" width="826" height="148" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="370" width="134" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25" y="382" font-size="9" font-weight="bold">Launch Gesture Session</text>
+
+<!-- 3.1 Customer → Browser: Start kiosk session -->
+<line x1="80"  y1="398" x2="218" y2="398" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="150" y="394" text-anchor="middle" font-size="8">Start kiosk session  (select garments)</text>
+
+<!-- 3.2 Browser → Flask: POST /api/sessions/init -->
+<line x1="220" y1="413" x2="398" y2="413" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="409" text-anchor="middle" font-size="8">POST /api/sessions/init  {kiosk_id}</text>
+
+<!-- 3.3 Flask → DB: Create TryOnSession -->
+<line x1="400" y1="427" x2="768" y2="427" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="423" text-anchor="middle" font-size="8">INSERT try_on_sessions  (status=active)</text>
+
+<!-- 3.4 DB → Flask -->
+<line x1="768" y1="441" x2="402" y2="441" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="585" y="437" text-anchor="middle" font-size="8">session_id</text>
+
+<!-- 3.5 Browser → Flask: GET /api/gestures/stream -->
+<line x1="220" y1="458" x2="398" y2="458" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="454" text-anchor="middle" font-size="8">GET /api/gestures/stream</text>
+
+<!-- 3.6 Flask → Browser: MJPEG stream (ongoing) -->
+<line x1="398" y1="472" x2="222" y2="472" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="468" text-anchor="middle" font-size="8">multipart/x-mixed-replace  (MJPEG frames ongoing)</text>
+
+<!-- 3.7 Browser → Customer: Show live camera feed -->
+<line x1="218" y1="505" x2="82"  y2="505" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="501" text-anchor="middle" font-size="8">Display live gesture feed</text>
+
+<!-- ══════════════════════════════════════
+     SECTION 4: Body Pose Capture
+     y: 528 → 680
+     ══════════════════════════════════════ -->
+<rect x="20" y="522" width="826" height="166" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="522" width="118" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25" y="534" font-size="9" font-weight="bold">Body Pose Capture</text>
+
+<!-- 4.1 Customer stands in front -->
+<text x="80" y="550" text-anchor="middle" font-size="8" font-style="italic">stands in front of kiosk</text>
+<line x1="80" y1="554" x2="80" y2="560" stroke="black" stroke-width="1"/>
+
+<!-- 4.2 Flask → Flask: PoseAnalyzer.analyze_frame -->
+<path d="M 402 567 C 440 567 440 581 402 581" fill="none" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="452" y="577" font-size="8">PoseAnalyzer.analyze_frame(frame, step)</text>
+
+<!-- 4.3 Flask → Browser: Pose feedback -->
+<line x1="398" y1="596" x2="222" y2="596" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="592" text-anchor="middle" font-size="8">pose feedback  {status, alignment, feedback}</text>
+
+<!-- 4.4 Browser → Customer: Alignment guidance -->
+<line x1="218" y1="610" x2="82"  y2="610" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="606" text-anchor="middle" font-size="8">Show alignment guidance overlay</text>
+
+<!-- 4.5 Customer → Browser: Gesture trigger / pinch to capture -->
+<line x1="80"  y1="628" x2="218" y2="628" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="150" y="624" text-anchor="middle" font-size="8">Pinch gesture (index + middle)</text>
+
+<!-- 4.6 Browser → Flask: POST /api/tryon/capture -->
+<line x1="220" y1="643" x2="398" y2="643" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="639" text-anchor="middle" font-size="8">POST /api/tryon/capture</text>
+
+<!-- 4.7 Flask → Flask: Capture frame from GestureEngine -->
+<path d="M 402 657 C 440 657 440 671 402 671" fill="none" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="452" y="667" font-size="8">GestureEngine.get_frame()  — encode to JPEG</text>
+
+<!-- 4.8 Flask → Browser: Captured person image -->
+<line x1="398" y1="680" x2="222" y2="680" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="676" text-anchor="middle" font-size="8">200 OK  {person_image_url}</text>
+
+<!-- ══════════════════════════════════════
+     SECTION 5: AI Try-On Generation
+     y: 704 → 1040
+     ══════════════════════════════════════ -->
+<rect x="20" y="698" width="826" height="358" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="698" width="136" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25" y="710" font-size="9" font-weight="bold">AI Try-On Generation</text>
+
+<!-- 5.1 Customer → Browser: Select garment, trigger try-on -->
+<line x1="80"  y1="726" x2="218" y2="726" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="150" y="722" text-anchor="middle" font-size="8">Select garment + trigger try-on</text>
+
+<!-- 5.2 Browser → Flask: POST /api/tryon/generate_multiview -->
+<line x1="220" y1="741" x2="398" y2="741" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="737" text-anchor="middle" font-size="8">POST /api/tryon/generate_multiview  {session_id, product_id, views}</text>
+
+<!-- 5.3 Flask → Flask: CatVTONEngine.discover() -->
+<path d="M 402 756 C 440 756 440 770 402 770" fill="none" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="452" y="766" font-size="8">CatVTONEngine.discover()  — resolve AI server URL</text>
+
+<!-- 5.4 Flask → AI Server: POST /tryon {person_img, garment_img} -->
+<line x1="400" y1="786" x2="588" y2="786" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="494" y="782" text-anchor="middle" font-size="8">POST /tryon  {person_img, garment_img, category}  × 4 views</text>
+
+<!-- AI Server internal loop (one per view) -->
+<rect x="534" y="796" width="282" height="212" fill="none" stroke="black" stroke-width="0.8" stroke-dasharray="4,2"/>
+<rect x="534" y="796" width="84" height="14" fill="white" stroke="black" stroke-width="0.8"/>
+<text x="537" y="807" font-size="8">loop [4 views]</text>
+
+<!-- 5.5 AI → AI: Auto-crop person image -->
+<path d="M 592 820 C 630 820 630 834 592 834" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="830" font-size="8">auto_crop(person_img)</text>
+
+<!-- 5.6 AI → AI: Pose Estimation -->
+<path d="M 592 846 C 630 846 630 860 592 860" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="856" font-size="8">Pose Estimation  (18 body keypoints)</text>
+
+<!-- 5.7 AI → AI: Human Parsing -->
+<path d="M 592 872 C 630 872 630 886 592 886" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="882" font-size="8">Human Parsing  (20-class segmentation mask)</text>
+
+<!-- 5.8 AI → AI: get_mask_location -->
+<path d="M 592 898 C 630 898 630 912 592 912" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="908" font-size="8">get_mask_location()  — agnostic inpaint mask</text>
+
+<!-- 5.9 AI → AI: DensePose UV map -->
+<path d="M 592 924 C 630 924 630 938 592 938" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="934" font-size="8">Body Map Generator  (UV DensePose map)</text>
+
+<!-- 5.10 AI → AI: encode_prompt -->
+<path d="M 592 950 C 630 950 630 964 592 964" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="960" font-size="8">encode_prompt()  (person + garment text)</text>
+
+<!-- 5.11 AI → AI: Diffusion inference -->
+<path d="M 592 976 C 630 976 630 990 592 990" fill="none" stroke="black" stroke-width="1" marker-end="url(#arr)"/>
+<text x="636" y="986" font-size="8">TryOnPipeline()  — diffusion inference  768×1024</text>
+
+<!-- end loop box -->
+
+<!-- 5.12 AI Server → Flask: PNG result -->
+<line x1="588" y1="1014" x2="402" y2="1014" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="494" y="1010" text-anchor="middle" font-size="8">4 × PNG (base64)  — FRONT / LEFT / RIGHT / BACK</text>
+
+<!-- 5.13 Flask → DB: INSERT try_on_events -->
+<line x1="400" y1="1030" x2="768" y2="1030" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="1026" text-anchor="middle" font-size="8">INSERT try_on_events  (product snapshot, duration)</text>
+
+<!-- 5.14 Flask → Browser: try-on image URLs -->
+<line x1="398" y1="1045" x2="222" y2="1045" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="1041" text-anchor="middle" font-size="8">200 OK  {view_images: [front, left, right, back]}</text>
+
+<!-- 5.15 Browser → Customer: Display 4-view result -->
+<line x1="218" y1="1050" x2="82"  y2="1050" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="1046" text-anchor="middle" font-size="8">Display 4-view try-on result + 360° viewer</text>
+
+<!-- ══════════════════════════════════════
+     SECTION 6: Subscription Check  (alt)
+     y: 1074 → 1200
+     ══════════════════════════════════════ -->
+<rect x="20" y="1068" width="826" height="142" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="1068" width="50" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25"  y="1080" font-size="9" font-weight="bold">alt</text>
+
+<!-- [Subscription active] -->
+<rect x="30" y="1068" width="816" height="68" fill="none" stroke="black" stroke-width="0.6" stroke-dasharray="3,2"/>
+<text x="36" y="1094" font-size="8" font-style="italic">[Subscription active — within product limit]</text>
+
+<line x1="220" y1="1106" x2="398" y2="1106" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="1102" text-anchor="middle" font-size="8">POST /api/subscriptions/upgrade</text>
+<line x1="400" y1="1120" x2="768" y2="1120" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="1116" text-anchor="middle" font-size="8">UPDATE subscriptions  (plan, status, limits)</text>
+<line x1="768" y1="1128" x2="402" y2="1128" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<!-- [Trial expired] alt box -->
+<rect x="30" y="1136" width="816" height="64" fill="none" stroke="black" stroke-width="0.6" stroke-dasharray="3,2"/>
+<text x="36" y="1148" font-size="8" font-style="italic">[Trial expired — limit reached]</text>
+<line x1="398" y1="1160" x2="222" y2="1160" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="1156" text-anchor="middle" font-size="8">403 Forbidden  {message: upgrade required}</text>
+<line x1="218" y1="1174" x2="82"  y2="1174" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="1170" text-anchor="middle" font-size="8">Show upgrade prompt</text>
+
+<!-- ══════════════════════════════════════
+     SECTION 7: End Session
+     y: 1224 → 1370
+     ══════════════════════════════════════ -->
+<rect x="20" y="1218" width="826" height="152" fill="none" stroke="black" stroke-width="1"/>
+<rect x="20" y="1218" width="80" height="16" fill="white" stroke="black" stroke-width="1"/>
+<text x="25" y="1230" font-size="9" font-weight="bold">End Session</text>
+
+<!-- 7.1 Customer → Browser: End session -->
+<line x1="80"  y1="1248" x2="218" y2="1248" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="150" y="1244" text-anchor="middle" font-size="8">End session</text>
+
+<!-- 7.2 Browser → Flask: POST /api/sessions/{id}/end -->
+<line x1="220" y1="1263" x2="398" y2="1263" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="310" y="1259" text-anchor="middle" font-size="8">POST /api/sessions/{session_id}/end</text>
+
+<!-- 7.3 Flask → DB: Update session -->
+<line x1="400" y1="1278" x2="768" y2="1278" stroke="black" stroke-width="1.2" marker-end="url(#arr)"/>
+<text x="585" y="1274" text-anchor="middle" font-size="8">UPDATE try_on_sessions  (status=completed, ended_at, duration)</text>
+
+<!-- 7.4 DB → Flask: Updated session -->
+<line x1="768" y1="1292" x2="402" y2="1292" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="585" y="1288" text-anchor="middle" font-size="8">session summary</text>
+
+<!-- 7.5 Flask → Browser: Session summary -->
+<line x1="398" y1="1308" x2="222" y2="1308" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="310" y="1304" text-anchor="middle" font-size="8">200 OK  {duration, products_tried, events[]}</text>
+
+<!-- 7.6 Browser → Customer: Show summary -->
+<line x1="218" y1="1356" x2="82"  y2="1356" stroke="black" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<text x="150" y="1352" text-anchor="middle" font-size="8">Show session summary screen</text>
+
+<!-- ══════════════════════════════════════
+     FOOTER LIFELINE BOXES
+     y = 1370
+     ══════════════════════════════════════ -->
+<rect x="30"  y="1390" width="100" height="30" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="80"  y="1410" text-anchor="middle" font-size="9" font-weight="bold">Customer</text>
+
+<rect x="168" y="1390" width="104" height="30" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="220" y="1410" text-anchor="middle" font-size="9" font-weight="bold">Browser</text>
+
+<rect x="343" y="1390" width="114" height="30" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="400" y="1410" text-anchor="middle" font-size="9" font-weight="bold">FlaskBackend</text>
+
+<rect x="534" y="1390" width="112" height="30" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="590" y="1410" text-anchor="middle" font-size="9" font-weight="bold">AITryOnServer</text>
+
+<rect x="718" y="1390" width="104" height="30" fill="white" stroke="black" stroke-width="1.2"/>
+<text x="770" y="1410" text-anchor="middle" font-size="9" font-weight="bold">Database</text>
+
+<!-- Caption -->
+<text x="430" y="1460" text-anchor="middle" font-size="11" font-weight="bold">Figure 4.3: Sequence Diagram — VirtualFit Complete Flow</text>
+</svg>
