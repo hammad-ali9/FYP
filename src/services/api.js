@@ -324,19 +324,24 @@ export const tryonAPI = {
 
     // IDM-VTON multi-view 360 try-on (Colab server).
     // personImages: { front, back, left, right } as base64/dataurl (front required)
-    // garmentDesc: short text description of the garment (improves IDM-VTON results)
-    generateMultiview: async ({ personImages, garmentFront, garmentBack = null,
-                                clothingType = 'upper', steps = 30, garmentDesc = '' }) => {
+    // garments: optional ordered list [{image, clothing_type, desc, back_image}] —
+    //   used for full outfits (e.g. shirt + pant). If omitted, falls back to the
+    //   single-garment fields (garmentFront/clothingType/garmentDesc).
+    generateMultiview: async ({ personImages, garmentFront = null, garmentBack = null,
+                                clothingType = 'upper', steps = 30, garmentDesc = '',
+                                garments = null }) => {
+        const body = { person_images: personImages, steps };
+        if (garments && garments.length) {
+            body.garments = garments;
+        } else {
+            body.garment_front = garmentFront;
+            body.garment_back = garmentBack;
+            body.clothing_type = clothingType;
+            body.garment_desc = garmentDesc;
+        }
         return apiRequest('/tryon/generate_multiview', {
             method: 'POST',
-            body: JSON.stringify({
-                person_images: personImages,
-                garment_front: garmentFront,
-                garment_back: garmentBack,
-                clothing_type: clothingType,
-                garment_desc: garmentDesc,
-                steps,
-            }),
+            body: JSON.stringify(body),
         });
     },
 

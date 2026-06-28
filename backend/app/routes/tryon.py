@@ -211,25 +211,50 @@ def generate_multiview():
         if not person_views.get('front'):
             return jsonify({'success': False, 'error': 'front person image is required'}), 400
 
-        garment_front = data.get('garment_front')
-        garment_back = data.get('garment_back')
-        if not garment_front:
-            return jsonify({'success': False, 'error': 'garment_front is required'}), 400
-
         upload_folder = current_app.config.get('UPLOAD_FOLDER')
-        garment_front_b64 = catvton_engine.resolve_image_to_b64(garment_front, upload_folder)
-        garment_back_b64 = (catvton_engine.resolve_image_to_b64(garment_back, upload_folder)
-                            if garment_back else None)
 
-        out = catvton_engine.tryon_multiview(
+        # Build the ordered list of garments to apply per view. Supports:
+        #   - NEW: data['garments'] = [{image, clothing_type, desc, back_image}]
+        #          (e.g. a shirt AND a pant -> applied in order, chained)
+        #   - LEGACY: single garment via garment_front / clothing_type
+        garments = []
+        if data.get('garments'):
+            for g in data['garments']:
+                img = g.get('image')
+                if not img:
+                    continue
+                garments.append({
+                    'b64': catvton_engine.resolve_image_to_b64(img, upload_folder),
+                    'back_b64': (catvton_engine.resolve_image_to_b64(g['back_image'], upload_folder)
+                                 if g.get('back_image') else None),
+                    'type': g.get('clothing_type', 'upper'),
+                    'desc': g.get('desc') or 'a garment',
+                })
+        else:
+            garment_front = data.get('garment_front')
+            if not garment_front:
+                return jsonify({'success': False, 'error': 'garment_front (or garments) is required'}), 400
+            garment_back = data.get('garment_back')
+            garments.append({
+                'b64': catvton_engine.resolve_image_to_b64(garment_front, upload_folder),
+                'back_b64': (catvton_engine.resolve_image_to_b64(garment_back, upload_folder)
+                             if garment_back else None),
+                'type': data.get('clothing_type', 'upper'),
+                'desc': data.get('garment_desc') or 'a garment',
+            })
+
+        if not garments:
+            return jsonify({'success': False, 'error': 'at least one garment is required'}), 400
+
+        # Apply upper before lower so chaining looks natural.
+        garments.sort(key=lambda g: {'upper': 0, 'full': 0, 'lower': 1}.get(g['type'], 0))
+
+        out = catvton_engine.tryon_outfit(
             person_views=person_views,
-            garment_front_b64=garment_front_b64,
-            garment_back_b64=garment_back_b64,
-            cloth_type=data.get('clothing_type', 'upper'),
+            garments=garments,
             steps=int(data.get('steps', 30)),
             guidance=float(data.get('guidance', 2.0)),
             seed=int(data.get('seed', 42)),
-            garment_desc=(data.get('garment_desc') or 'a garment'),
         )
 
         if not out['results']:

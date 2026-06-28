@@ -399,27 +399,30 @@ const TryOn = () => {
             setIsGenerating(true);
             setError(null);
 
-            const garment = selectedUpper || selectedLower;
-            const clothingType = isLowerBody(garment)
-                ? 'lower'
-                : (garment.clothing_type === 'full' ? 'full' : 'upper');
+            // Build an ordered garment list so a shirt AND a pant can be applied
+            // together (IDM-VTON fits one region per pass, so the backend chains
+            // them). Upper first, then lower.
+            const toGarment = (product) => ({
+                image: product.image_url || getProductImage(product),
+                back_image: product.back_image_url || null,
+                clothing_type: isLowerBody(product)
+                    ? 'lower'
+                    : (product.clothing_type === 'full' ? 'full' : 'upper'),
+                desc: [product.name, product.description].filter(Boolean).join(', ').slice(0, 120) || 'a garment',
+            });
+            const garments = [];
+            if (selectedUpper) garments.push(toGarment(selectedUpper));
+            if (selectedLower) garments.push(toGarment(selectedLower));
 
-            // Short text description for IDM-VTON's conditioning ("model is wearing <desc>").
-            const garmentDesc = [garment.name, garment.description]
-                .filter(Boolean).join(', ').slice(0, 120) || 'a garment';
-
-            // Send every captured body view; CatVTON runs once per view on the
-            // Colab server (front garment for front/left/right, back for BACK).
+            // Send every captured body view; IDM-VTON runs once per garment per
+            // view on the Colab server.
             const personViews = Object.fromEntries(
                 Object.entries(personImages).filter(([, img]) => !!img)
             );
 
             const response = await tryonAPI.generateMultiview({
                 personImages: personViews,
-                garmentFront: garment.image_url || getProductImage(garment),
-                garmentBack: garment.back_image_url || null,
-                clothingType,
-                garmentDesc,
+                garments,
                 steps: 30,
             });
 

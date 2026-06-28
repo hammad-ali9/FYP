@@ -209,6 +209,39 @@ class CatVTONEngine:
 
         return {'results': results, 'timings': timings, 'errors': errors}
 
+    def tryon_outfit(self, person_views: dict, garments: list,
+                     steps: int = 30, guidance: float = 2.0, seed: int = 42) -> dict:
+        """Apply an ordered list of garments to each captured view, CHAINING each
+        result as the person input for the next garment — so a shirt (upper) and a
+        pant (lower) get composited into one image. IDM-VTON only fits one region
+        per pass, so a full outfit needs one pass per garment.
+
+        garments: [{'b64': str, 'type': 'upper'|'lower'|'full', 'desc': str,
+                    'back_b64': optional str}]  applied in order.
+        Returns {'results': {view: dataurl}, 'timings': {view: seconds}, 'errors': {view: msg}}.
+        """
+        results, timings, errors = {}, {}, {}
+        for view in VIEWS:
+            person = person_views.get(view)
+            if not person:
+                continue
+            try:
+                img = person
+                total = 0.0
+                for g in garments:
+                    cloth = (g.get('back_b64') if (view == 'back' and g.get('back_b64'))
+                             else g['b64'])
+                    out = self.tryon(img, cloth, cloth_type=g.get('type', 'upper'),
+                                     steps=steps, guidance=guidance, seed=seed,
+                                     cloth_desc=g.get('desc', 'a garment'))
+                    img = out.get('image')          # chain: result -> next pass's person
+                    total += out.get('seconds') or 0
+                results[view] = img
+                timings[view] = round(total, 1)
+            except Exception as e:  # one failed view shouldn't kill the rest
+                errors[view] = str(e)
+        return {'results': results, 'timings': timings, 'errors': errors}
+
 
 # Global shared instance
 catvton_engine = CatVTONEngine()
